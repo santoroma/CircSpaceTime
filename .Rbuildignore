@@ -1,0 +1,9 @@
+^packrat/
+^\.Rprofile$
+^.*\.Rproj$
+^\.Rproj\.user$
+Gian*
+^temp/
+^RCrossBuild/
+^.\temp
+^.\RCrossBuild

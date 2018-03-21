@@ -14,10 +14,8 @@ License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/santoroma/circspacetime
-Suggests: foreach,
-    knitr,
-    rmarkdown
+Suggests: foreach, knitr, rmarkdown
 LinkingTo: Rcpp, RcppArmadillo, RInside
-Imports: Rcpp (>= 0.12.14), circular
+Imports: Rcpp (>= 0.12.14), circular, RInside
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

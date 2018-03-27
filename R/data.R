@@ -1,4 +1,6 @@
-#' Four days of waves data on the Adriatic sea in the month of April 2010
+#' April waves.
+#'
+#' Four days of waves data on the Adriatic sea in the month of April 2010.
 #'
 #'
 #' Wave directions and heights are obtained as outputs from a deterministic computer model implemented by Istituto Superiore per la Protezione e la Ricerca Ambientale (ISPRA).
@@ -9,9 +11,8 @@
 #' due to wave fracture.
 #' The model produces estimates every hour on a grid with 10 × 10 km cells (Inghilesi et al. 2016).
 #' The ISPRA dataset has forecasts for a total of 4941 grid points over the Italian Mediterranean. Over the Adriatic Sea area, there are 1494 points.
-
 #'
-#'  A list containing 4 data frames each of 35856 rows and 7 columns
+#'  A list containing 4 data frames each of 35856 rows and 7 columns.
 #'
 #' @format
 #' \describe{
@@ -24,7 +25,11 @@
 #' }
 #' @source  R. Inghilesi, A. Orasi & F. Catini (2016) The ISPRA Mediterranean Coastal Wave Forecasting system: evaluation and perspectives  Journal of Operational Oceanography Vol. 9 , Iss. sup1 \url{http://www.tandfonline.com/doi/full/10.1080/1755876X.2015.1115635}
 "april"
-#' Four time slices of waves data on the Adriatic sea in the month of May 2010
+
+
+#' May waves.
+#'
+#' Four time slices of waves data on the Adriatic sea in the month of May 2010.
 #'
 #'
 #' Wave directions and heights are obtained as outputs from a deterministic computer model implemented by Istituto Superiore per la Protezione e la Ricerca Ambientale (ISPRA).
@@ -35,9 +40,8 @@
 #' due to wave fracture.
 #' The model produces estimates every hour on a grid with 10 × 10 km cells (Inghilesi et al. 2016).
 #' The ISPRA dataset has forecasts for a total of 4941 grid points over the Italian Mediterranean. Over the Adriatic Sea area, there are 1494 points.
-
 #'
-#'  A list containing 4 data frames each of 1494 rows and 7 columns
+#'  A list containing 4 data frames each of 1494 rows and 7 columns.
 #'
 #' @format
 #' \describe{

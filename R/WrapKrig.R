@@ -13,7 +13,7 @@
 #' \item{V_out} the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
 #' \item{Prev_out} are the posterior predicted  values at the unobserved locations.
 #' }
-#' @example
+#' @examples
 #' data(april)
 #' attach(april)
 #' storm1<-apr6.2010[apr6.2010$hour=="20:00",]

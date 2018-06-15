@@ -1,21 +1,39 @@
-#' Kriging using wrapped normal model.
-#'
-#' \code{ProjKrig} function computes the Kriging prediction for circular spatial data
-#' as proposed in G Jona-Lasinio, A Gelfand, M Jona-Lasinio Spatial analysis of wave direction data using wrapped gaussian processes - The Annals of Applied Statistics, 2012,V. 6, 4,  pp1478-1498
-#'
-#' @param WrapSp_out the functions takes the output of \code{WrapSp} function
-#' @param coords_obs coordinates of observed locations (in UTM)
-#' @param coords_nobs coordinates of unobserved locations (in UTM)
-#' @param x_oss observed values
-#' @return a list of 3 elements
-#' \describe{
-#'	\item{M_out} the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{V_out} the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{Prev_out} are the posterior predicted  values at the unobserved locations.
+#'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
+#' as proposed in
+ #' @param  x a vector of n circular data in [0,2\pi)]
+#' @param  coords an nx2 matrix with the sites coordinates
+#' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
+#' \itemize{
+#' \item 	alpha the mean,
+#' \item  rho the spatial decay parameter,
+#' \item sigma2 the process variance,
+#' \item k the vector of \code{length(x)}  winding numbers
 #' }
+#' @param  prior a list of 4 elements to define priors  for the model parameters:
+#' \describe{
+#' \item{alpha} a vector of 2 elements the mean and the variance of  a Gaussian distribution, default is  mean \eqn{\pi} and variance 1,
+#' \item{rho}  a vector of 2 elements defining the shape and rate of a gamma distribution,
+#' \item{ sigma2}  a vector of 2 elements defining the shape and rate of an inverse-gamma distribution
+#' \item{beta} a vector of 3 elements (c,a,b). For the nugget (if present) we use the parametrization \eqn{\beta=nugget/\sigma^2} and then a scaled Beta distribution is chosen as prior i.e. c*Beta(a,b), with a,b,c>0.
+#' }
+#' @param sd.prop= list of 3 elements. To run the MCMC for the rho and sigma2 parameters we use an adaptive metropolis and in sd.prop we build a list of initial guesses for these two parameters and the beta parameter
+#' @param nugget  logical, if the measurement error term must be added, default to TRUE
+#' @paramiter  iter number of iterations
+#' @param bigSim a vector of 2 elements with  the burnin and the chain thinning
+#' @param accept.ratio it is the desired acceptance ratio in the adaptive metropolis
+#' @param adapt.param a vector of 3 elements giving the iteration number at which the adaptation must start  and end. The third element (esponente)  must be a number in (0,1) is a parameter ruling the speed of changes in the adaptation algorithm, it is recommended to set it close to 1, if it is too small  non positive definite matrices may be generated and the program crashes.
+#' @param corr_fun  characters, the name of the correlation function, currently implemented functions are c("exponential", "matern")
+#' @param kappa_matern numeric, the smoothness parameter of the Matern correlation function, k=0.5 is the exponential function
+#' @param n_chain numeric the number of chains to be lunched (we recommend to use at least 2 for model diagnostic)
+#' @param parallel logical, if the multiplechains  must be lunched in parallel
+#' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
+#'@return it returns a list of \code{n_chains} lists each with elements
+#' \code{alpha}, \code{rho}, \code{beta}, \code{sigma2} vectors with the thinned chains, \code{k} a matrix with \code{nrow=length(x)} and \cod{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
 #' @examples
 #' data(april)
 #' attach(april)
+#' ### an example on a storm
+#' ## select an hour on the entire Adriatic
 #' storm1<-apr6.2010[apr6.2010$hour=="20:00",]
 #' plot(storm1$Lon,storm1$Lat, col=storm1$state,pch=20)
 #' legend("bottomleft",c("calm","transition","storm"),pch=20,col=c(1,2,3),title="Sea state")
@@ -67,48 +85,129 @@
 #' n_chains=2,
 #' parallel=T,
 #' n_cores=2)
-#' Pred = WrapKrig(
-#' #   # Use the output of WrapSp
-#' WrapSp_out = mod,
-#' #   # The coordinates for the observed points
-#' coords_obs = coords.train,
-#' #   # the coords of the validation points
-#' coords_nobs = coords.test,
-#' #   #the observed circular values
-#' x_oss = train$Dmr
-#' )
+#' ## we check convergence
+#' check<- ConvCheck(mod)
+#' check$Rhat ### convergence has been reached
+#' par(mfrow=c(2,2))
+#' coda::traceplot(check$mcmc)
+#' #or/and
+#' require(coda)
+#' plot(check$mcmc) # remember that alpha is a circular variable
+#' #### a more complex situation, when calm and transition states are mixed
+#' data(may6.2010.00)
 
-ProjKrig <- function(
-  ProjSp_out,
-  coords_obs,
-  coords_nobs,
-  theta_oss
-)
+ProjSp  <- function(
+  theta     = theta,
+  coords    = coords,
+  start   = list("alpha"      = c(1,1,.5,.5),
+                 "rho0"     = c(0.1, .5),
+                 "rho"      = c(.1,.5),
+                 "sigma2"    = c(0.1, .5),
+                 "r"       = sample(1,length(theta), replace = T)),
+  prior   = list("rho0"      = c(8,14),
+                 "rho"     = c(8,14),
+                 "sigma2"    = c(),
+                 "alpha_mu" = c(1., 1.),
+                 "alpha_sigma" = c()
+  ) ,
+  sd_prop   = list( "sigma2" = 0.5, "rho0" = 0.5, "rho" = 0.5,"beta" = .5, "sdr" = sample(.05,length(theta), replace = T)),
+  iter    = 1000,
+  bigSim    = c(burnin = 20, thin = 10),
+  accept_ratio = 0.234,
+  adapt_param = c(start = 1, end = 10000000, esponente = 0.9, sdr_update_iter = 50),
+  corr_fun = "exponential", kappa_matern = .5,
+  n_chains = 2, parallel = FALSE, n_cores = 2)
 {
-#  MeanCirc <- circular::mean.circular(x_oss)
-#  x_oss <- (x_oss - MeanCirc + pi) %% (2*pi)
-  pp <- unlist(ProjSp_out)
-  sigma2 <- as.numeric(pp[regexpr("sigma2",names(pp)) == 1])
-  rho <- as.numeric(pp[regexpr("rho",names(pp)) == 1])
-  rho0 <- as.numeric(pp[regexpr("rho",names(pp)) == 1])
-  row.r <- nrow(ProjSp_out[[1]]$r)
-  pp2 <- as.numeric(pp[regexpr("r",names(pp)) == 1])
-  r <- matrix(pp2,nrow = row.r)
-  row.alpha <- nrow(ProjSp_out[[1]]$alpha)
-  pp2 <- as.numeric(pp[regexpr("alpha",names(pp)) == 1])
-  alpha <- matrix(pp2,nrow = row.alpha)
-  rm(pp,pp2)
-  corr_fun <- ProjSp_out[[1]]$corr_fun
-  kappa_matern <- 0
-  if (corr_fun == "kappa_matern") {
-    kappa_matern <- ProjSp_out$kappa_matern
-  }
-  n	<- nrow(r)
-  nprev	<- nrow(coords_nobs)
-  nsample	<- ncol(r)
 
-  H_tot	<- as.matrix(stats::dist(rbind(coords_obs,coords_nobs)))
-  out <- ProjKrigCpp(sigma2,rho, rho0, alpha, r, n, nsample,	H_tot,nprev, theta_oss, corr_fun, kappa_matern)
-  out$Prev_out <- (out$Prev_out - pi + MeanCirc) %% (2*pi)
+  ## ## ## ## ## ## ##
+  ## Sim
+  ## ## ## ## ## ## ##
+  ## ## ## ## ## ## ##
+
+  #######
+  burnin					=	bigSim[1]
+  thin					= 	bigSim[2]
+  n_j						=	length(theta)
+  H						=	as.matrix(stats::dist(coords))
+
+  ######
+  ad_start				=	adapt_param["start"]
+  ad_end					=	adapt_param["end"]
+  ad_esp					=	adapt_param["esponente"]
+  sdr_update_iter = adapt_param["sdr_update_iter"]
+
+  #####
+
+  iter_1          		= burnin
+  iter_2					=	round((iter - burnin)/thin)
+
+  # priori
+  prior_rho0				=	prior[["rho0"]]
+  prior_rho				=	prior[["rho"]]
+  prior_sigma2			=	prior[["sigma2"]]
+  prior_alpha_sigma = prior[["alpha_sigma"]]
+  prior_alpha_mu = prior[["alpha_mu"]]
+  # sd proposal
+  sdprop_sigma2 = sd_prop[["sigma2"]]
+  sdprop_rho0	= sd_prop[["rho0"]]
+  sdprop_rho	= sd_prop[["rho"]]
+  sdprop_r	= sd_prop[["sdr"]]
+  # starting
+  start_alpha				=	start[["alpha"]]
+  if (length(start_alpha) != 2*n_chains) {stop(paste('start[["alpha"]] length should be equal to 2*n_chains (',
+                                                  n_chains,')', sep = ''))}
+  start_rho				=	start[["rho"]]
+  if (length(start_rho) != n_chains) {stop(paste('start[["rho"]] length should be equal to n_chains (',
+                                                n_chains,')', sep = ''))}
+  start_rho0				=	start[["rho0"]]
+  if (length(start_rho) != n_chains) {stop(paste('start[["rho"]] length should be equal to n_chains (',
+                                                 n_chains,')', sep = ''))}
+  start_sigma2			=	start[["sigma2"]]
+  if (length(start_sigma2) != n_chains) {stop(paste('start[["sigma2"]] length should be equal to n_chains (',
+                                                   n_chains,')', sep = ''))}
+  start_r					=	start[["r"]]
+
+  acceptratio = accept_ratio
+  corr_fun = corr_fun
+  corr_fun_list <- c("exponential", "matern") #,"gaussian"
+  if (!corr_fun %in% corr_fun_list) {
+    error_msg <- paste("You should use one of these correlation functions: ",paste(corr_fun_list,collapse = "\n"),sep = "\n")
+    stop(error_msg)
+  } else{
+    if (corr_fun == "matern" & kappa_matern <= 0) stop("kappa_matern should be strictly positive")}
+
+    if (parallel) {
+      ccc <- try(library(doParallel))
+      if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
+      cl <- makeCluster(n_cores)
+      registerDoParallel(cl)
+      out <- foreach(i = 1:n_chains) %dopar% {
+        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
+                                     burnin, thin,iter_1,iter_2,
+                                     n_j, sdr_update_iter,
+                                     prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
+                                     sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
+                                     start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
+                                     x,H, acceptratio,
+                                     corr_fun, kappa_matern)
+        out_temp
+      }
+      stopCluster(cl)
+    } else {
+      out <- list()
+      for (i in 1:n_chains) {
+        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
+                            burnin, thin,iter_1,iter_2,
+                            n_j, sdr_update_iter,
+                            prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
+                            sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
+                            start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
+                            x,H, acceptratio,
+                            corr_fun, kappa_matern)
+
+        out[[i]] <- out_temp
+      }
+    }
+
   return(out)
-  }
+}

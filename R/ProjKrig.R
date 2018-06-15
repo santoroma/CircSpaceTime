@@ -78,7 +78,7 @@
 #' x_oss = train$Dmr
 #' )
 
-WrapKrig = function(
+ProjKrig <- function(
   ProjSp_out,
   coords_obs,
   coords_nobs,

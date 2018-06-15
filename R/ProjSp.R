@@ -1,6 +1,6 @@
-#'  \code{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution
-#' as proposed in 		Giovanna Jona LasinioAlan GelfandMattia Jona-Lasinio Spatial analysis of wave direction data using wrapped Gaussian processes 		The Annals of Applied Statistics 6(4) (2013)  		DOI10.1214/12-AOAS576
-#' @param  x a vector of n circular data in [0,2\pi)]
+#'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
+#' as proposed in
+ #' @param  x a vector of n circular data in [0,2\pi)]
 #' @param  coords an nx2 matrix with the sites coordinates
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
@@ -96,26 +96,25 @@
 #' #### a more complex situation, when calm and transition states are mixed
 #' data(may6.2010.00)
 
-
-WrapSp  <- function(
-  x     = x,
+ProjSp  <- function(
+  theta     = theta,
   coords    = coords,
-  start   = list("alpha"      = c(2,1),
-                 "rho"     = c(0.1, .5),
+  start   = list("alpha"      = c(1,1,.5,.5),
+                 "rho0"     = c(0.1, .5),
+                 "rho"      = c(.1,.5),
                  "sigma2"    = c(0.1, .5),
-                 "beta" = c(.01,.1),
-                 "k"       = sample(0,length(x), replace = T)),
-  prior   = list("alpha"      = c(pi,1, -10, 10),
+                 "r"       = sample(1,length(theta), replace = T)),
+  prior   = list("rho0"      = c(8,14),
                  "rho"     = c(8,14),
                  "sigma2"    = c(),
-                 "beta" = c(0.05, 1., 1.)
+                 "alpha_mu" = c(1., 1.),
+                 "alpha_sigma" = c()
   ) ,
-  nugget = FALSE,
-  sd_prop   = list( "sigma2" = 0.5, "rho" = 0.5, "beta" = .5 ),
+  sd_prop   = list( "sigma2" = 0.5, "rho0" = 0.5, "rho" = 0.5,"beta" = .5, "sdr" = sample(.05,length(theta), replace = T)),
   iter    = 1000,
   bigSim    = c(burnin = 20, thin = 10),
   accept_ratio = 0.234,
-  adapt_param = c(start = 1, end = 10000000, esponente = 0.9),
+  adapt_param = c(start = 1, end = 10000000, esponente = 0.9, sdr_update_iter = 50),
   corr_fun = "exponential", kappa_matern = .5,
   n_chains = 2, parallel = FALSE, n_cores = 2)
 {
@@ -124,18 +123,18 @@ WrapSp  <- function(
   ## Sim
   ## ## ## ## ## ## ##
   ## ## ## ## ## ## ##
-  MeanCirc <- circular::mean.circular(x)
-  x <- (x - MeanCirc + pi) %% (2*pi)
+
   #######
   burnin					=	bigSim[1]
   thin					= 	bigSim[2]
-  n_j						=	length(x)
+  n_j						=	length(theta)
   H						=	as.matrix(stats::dist(coords))
 
   ######
   ad_start				=	adapt_param["start"]
   ad_end					=	adapt_param["end"]
   ad_esp					=	adapt_param["esponente"]
+  sdr_update_iter = adapt_param["sdr_update_iter"]
 
   #####
 
@@ -143,23 +142,30 @@ WrapSp  <- function(
   iter_2					=	round((iter - burnin)/thin)
 
   # priori
-  prior_alpha				=	prior[["alpha"]]
+  prior_rho0				=	prior[["rho0"]]
   prior_rho				=	prior[["rho"]]
   prior_sigma2			=	prior[["sigma2"]]
+  prior_alpha_sigma = prior[["alpha_sigma"]]
+  prior_alpha_mu = prior[["alpha_mu"]]
   # sd proposal
   sdprop_sigma2 = sd_prop[["sigma2"]]
+  sdprop_rho0	= sd_prop[["rho0"]]
   sdprop_rho	= sd_prop[["rho"]]
+  sdprop_r	= sd_prop[["sdr"]]
   # starting
-  start_alpha				=	(start[["alpha"]] - MeanCirc + pi) %% (2*pi)
-  if (length(start_alpha) != n_chains) {stop(paste('start[["alpha"]] length should be equal to n_chains (',
+  start_alpha				=	start[["alpha"]]
+  if (length(start_alpha) != 2*n_chains) {stop(paste('start[["alpha"]] length should be equal to 2*n_chains (',
                                                   n_chains,')', sep = ''))}
   start_rho				=	start[["rho"]]
   if (length(start_rho) != n_chains) {stop(paste('start[["rho"]] length should be equal to n_chains (',
                                                 n_chains,')', sep = ''))}
+  start_rho0				=	start[["rho0"]]
+  if (length(start_rho) != n_chains) {stop(paste('start[["rho"]] length should be equal to n_chains (',
+                                                 n_chains,')', sep = ''))}
   start_sigma2			=	start[["sigma2"]]
   if (length(start_sigma2) != n_chains) {stop(paste('start[["sigma2"]] length should be equal to n_chains (',
                                                    n_chains,')', sep = ''))}
-  start_k					=	start[["k"]]
+  start_r					=	start[["r"]]
 
   acceptratio = accept_ratio
   corr_fun = corr_fun
@@ -170,85 +176,38 @@ WrapSp  <- function(
   } else{
     if (corr_fun == "matern" & kappa_matern <= 0) stop("kappa_matern should be strictly positive")}
 
-  if (nugget == TRUE) {
-    if (prior[["beta"]][1] > 0 & prior[["beta"]][1] <= 1) {
-      prior_beta = prior[["beta"]]
-    } else{
-      error_msg <- paste("Wrong specification of nugget prior parameter beta: \n it should be stricly positive and <=1")
-      stop(error_msg)
-    }
-    sdprop_beta	= sd_prop[["beta"]]
-    start_beta					=	start[["beta"]]
-    if (length(start_beta) != n_chains) {stop(paste('start[["beta"]] length should be equal to n_chains (',
-                                                    n_chains,')', sep = ''))}
     if (parallel) {
       ccc <- try(library(doParallel))
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
       out <- foreach(i = 1:n_chains) %dopar% {
-        out_temp <- WrapSpRcpp_nugget(ad_start, ad_end, ad_esp,
+        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
                                      burnin, thin,iter_1,iter_2,
-                                     n_j,
-                                     prior_alpha,prior_rho,prior_sigma2, prior_beta,
-                                     sdprop_rho,sdprop_sigma2,sdprop_beta,
-                                     start_alpha[i],start_rho[i],start_sigma2[i],start_beta[i], start_k,
+                                     n_j, sdr_update_iter,
+                                     prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
+                                     sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
+                                     start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
                                      x,H, acceptratio,
                                      corr_fun, kappa_matern)
-        out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
         out_temp
       }
       stopCluster(cl)
     } else {
       out <- list()
       for (i in 1:n_chains) {
-        out_temp = WrapSpRcpp_nugget(ad_start, ad_end, ad_esp,
-                              burnin, thin,iter_1,iter_2,
-                              n_j,
-                              prior_alpha,prior_rho,prior_sigma2, prior_beta,
-                              sdprop_rho,sdprop_sigma2,sdprop_beta,
-                              start_alpha[i],start_rho[i],start_sigma2[i],start_beta[i], start_k,
-                              x,H, acceptratio,
-                              corr_fun, kappa_matern)
-        out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
+        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
+                            burnin, thin,iter_1,iter_2,
+                            n_j, sdr_update_iter,
+                            prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
+                            sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
+                            start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
+                            x,H, acceptratio,
+                            corr_fun, kappa_matern)
+
         out[[i]] <- out_temp
       }
     }
-  }
-  else {
-    if (parallel) {
-      ccc <- try(library(doParallel))
-      if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
-      cl <- makeCluster(n_cores)
-      registerDoParallel(cl)
-      out <- foreach(i = 1:n_chains) %dopar% {
-        out_temp = WrapSpRcpp(ad_start, ad_end, ad_esp,
-                              burnin, thin,iter_1,iter_2,
-                              n_j,
-                              prior_alpha,prior_rho,prior_sigma2,
-                              sdprop_rho,sdprop_sigma2,
-                              start_alpha[i],start_rho[i],start_sigma2[i],start_k,
-                              x,H, acceptratio,
-                              corr_fun, kappa_matern)
-        out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
-        out_temp
-      }
-      stopCluster(cl)
-    } else {
-    out <- list()
-    for (i in 1:n_chains) {
-      out_temp = WrapSpRcpp(ad_start, ad_end, ad_esp,
-                       burnin, thin,iter_1,iter_2,
-                       n_j,
-                       prior_alpha,prior_rho,prior_sigma2,
-                       sdprop_rho,sdprop_sigma2,
-                       start_alpha[i],start_rho[i],start_sigma2[i],start_k,
-                       x,H, acceptratio,
-                       corr_fun, kappa_matern)
-      out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
-      out[[i]] <- out_temp
-    }
-  }
-  }
+
   return(out)
 }

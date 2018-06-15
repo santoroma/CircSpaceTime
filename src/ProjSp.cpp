@@ -48,6 +48,7 @@ List ProjSpRcpp(
   //                Varie ed eventuali
   // *****************************************/
 
+   
   int i;
   arma::vec y(2*n_j);
   for(i=0;i<n_j;i++)
@@ -123,8 +124,8 @@ List ProjSpRcpp(
 
   // alpha
   arma::vec app_alpha(n_j);
-  arma::vec Valpha(2);
-  arma::mat Malpha(2,2);
+  arma::vec Malpha(2);
+  arma::mat Valpha(2,2);
   arma::mat X(2*n_j,2);
 
   for(i=0;i<n_j;i++) {
@@ -139,8 +140,8 @@ List ProjSpRcpp(
   double sigma2_p;
   double rho_p;
 
-  arma::vec sim_sp_p(2);
-  arma::vec sim_sp(2);
+  arma::vec sim_sp_p(3);
+  arma::vec sim_sp(3);
 
   arma::mat Mat_ad_sp(3,3);
   Mat_ad_sp(0,0) = sdsigma2;
@@ -202,6 +203,7 @@ List ProjSpRcpp(
   // to save
   int nSamples_save = iter_2;
 
+    
   NumericVector Prev(n_j);
   NumericVector sigma2_out_add(nSamples_save), rho0_out_add(nSamples_save), rho_out_add(nSamples_save);
   arma::mat alpha_out_add(2,nSamples_save);
@@ -217,9 +219,11 @@ List ProjSpRcpp(
   int BurinOrThin = burnin;
   arma::vec r_MH(n_j), r_MH_sum(n_j);
   int ii;
+   
   for(ii=0; ii<n_j; ii++){
-    r_MH_sum(n_j) = 0;
+    r_MH_sum(ii) = 0;
   }
+
   double dens_y;
   double dens_y_p;
   //    int nnn=0;
@@ -237,9 +241,12 @@ List ProjSpRcpp(
       Sample 2D-Gaussian Mean
       ******************/
 
-      Valpha = inv(X.t()*Cor_inv + inv(prior_alpha_sigma));
-      Malpha = Valpha*(X.t()*Cor_inv*y + prior_alpha_mu.t()*inv(prior_alpha_sigma));
-      alpha = mvrnormArma(2, Malpha, Valpha);
+        
+        Valpha = inv(X.t()*Cor_inv*X + inv(prior_alpha_sigma));
+        
+      Malpha = Valpha*(X.t()*Cor_inv*y + inv(prior_alpha_sigma)*prior_alpha_mu);
+        
+      alpha = mvrnormArma(1, Malpha, Valpha).t();
 
       for(i=0;i<n_j;i++)
       {
@@ -271,15 +278,15 @@ List ProjSpRcpp(
       sim_sp[1] = log((rho0 - prior_rho0[0])/(prior_rho0[1] - rho0));
       sim_sp[2] = log((rho - prior_rho[0])/(prior_rho[1] - rho));
 
-      for(i=0;i<2;i++)
+      for(i=0;i<3;i++)
       {
         sim_sp_p[i] = R::rnorm(0.0,1.0);
       }
 
       sim_sp_p = app_Mat_ad_sp*sim_sp_p;
       sim_sp_p = One*sim_sp + sim_sp_p;
+       
       sigma2_p = exp(sim_sp_p[0]);
-      //sigma2_p[0] = sigma2[0];
       rho0_p  =  (exp(sim_sp_p[1]) * prior_rho0[1] + prior_rho0[0]) / (1.0 + exp(sim_sp_p[1]));
       rho_p  =  (exp(sim_sp_p[2]) * prior_rho[1] + prior_rho[0]) / (1.0 + exp(sim_sp_p[2]));
 
@@ -340,8 +347,8 @@ List ProjSpRcpp(
 
       app_MH_D_sp = One*Cor_inv*yMalpha + Zero*app_MH_D_sp;
       app_MH_N_sp = One*Cor_inv_p*yMalpha + Zero*app_MH_N_sp;
-      MH_D_sp = -0.5*arma::dot(app_MH_D_sp,yMalpha)/sigma2 -0.5*logdet_cor-(n_j)*log(sigma2 );
-      MH_N_sp = -0.5*arma::dot(app_MH_N_sp, yMalpha)/sigma2_p-0.5*logdet_cor_p-(n_j)*log(sigma2_p );
+      MH_D_sp = -0.5*arma::dot(app_MH_D_sp,yMalpha) -0.5*logdet_cor;
+      MH_N_sp = -0.5*arma::dot(app_MH_N_sp, yMalpha)-0.5*logdet_cor_p;
 
       alpha_star= std::min(1.0,exp( MH_N_sp+Psigma2_p+ Prho0_p + Prho_p- (MH_D_sp+Psigma2+ Prho0 +Prho) ));
       if(R::runif(0.0,1.0)< alpha_star)
@@ -356,20 +363,20 @@ List ProjSpRcpp(
         logdet_cor = logdet_cor_p;
         Cor_inv0 = Cor_inv0_p;
         Cov2 = Cov2_p;
+        Cor_inv = Cor_inv_p;
       }
-
 
       if(Iterations>ad_start and Iterations<ad_end)
       {
         lambda_adapt_sp      = exp(log(lambda_adapt_sp)+molt*(alpha_star-acceptratio));
-        for(i=0;i<2;i++)
+        for(i=0;i<3;i++)
         {
           app_mean_sp[i] = sim_sp[i]-mean_sp[i];
           mean_sp[i] = mean_sp[i]+molt* app_mean_sp[i];
         }
-        for(i=0;i<2;i++)
+        for(i=0;i<3;i++)
         {
-          for(j=0;j<2;j++)
+          for(j=0;j<3;j++)
           {
             Mat_ad_sp(j,i) =  Mat_ad_sp(j,i)+(app_mean_sp[i]*app_mean_sp[j]- Mat_ad_sp(j,i))*molt;
           }
@@ -419,7 +426,8 @@ List ProjSpRcpp(
         }
 
       }
-           /****************
+
+     /****************
       End First For
       ******************/
 

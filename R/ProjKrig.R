@@ -109,6 +109,6 @@ ProjKrig <- function(
 
   H_tot	<- as.matrix(stats::dist(rbind(coords_obs,coords_nobs)))
   out <- ProjKrigCpp(sigma2,rho, rho0, alpha, r, n, nsample,	H_tot,nprev, theta_oss, corr_fun, kappa_matern)
-  out$Prev_out <- (out$Prev_out - pi + MeanCirc) %% (2*pi)
+#  out$Prev_out <- (out$Prev_out - pi + MeanCirc) %% (2*pi)
   return(out)
   }

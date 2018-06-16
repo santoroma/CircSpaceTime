@@ -188,7 +188,7 @@ ProjSp  <- function(
                                      prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
                                      sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
                                      start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
-                                     x,H, acceptratio,
+                                     theta,H, acceptratio,
                                      corr_fun, kappa_matern)
         out_temp
       }
@@ -202,7 +202,7 @@ ProjSp  <- function(
                             prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
                             sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
                             start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
-                            x,H, acceptratio,
+                            theta,H, acceptratio,
                             corr_fun, kappa_matern)
 
         out[[i]] <- out_temp

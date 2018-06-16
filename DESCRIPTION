@@ -19,3 +19,5 @@ LinkingTo: Rcpp, RcppArmadillo, RInside
 Imports: Rcpp (>= 0.12.14), circular, RInside
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
+Author: Who wrote it
+Maintainer: Who to complain to <yourfault@somewhere.net>

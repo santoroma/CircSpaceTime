@@ -2,16 +2,10 @@
 title: "CircSpaceTime: an R package for spatial and spatio-temporal modeling of Circular data"
 author: "Giovanna Jona Lasinio, Mario Santoro, Gianluca Mastrantonio"
 date: "`r Sys.Date()`"
-output: 
-  rmarkdown::html_vignette
-  # pdf_document:
-  #   citation_package: natbib
-  #   fig_caption: true
-  #   latex_engine: pdflatex
-  #   number_sections: true
+output: rmarkdown::html_vignette
 bibliography: CircRef.bib
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{CircSpaceTime: an R package for spatial and spatio-temporal modeling of Circular data}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
@@ -23,14 +17,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-## 
-\abstract{CircSpaceTime is going to be a new R package that eventually will implement most of the models  recently developed for spatial and spatio-temporal interpolation of circular data. Such data are often found in applications where, among the many, wind directions, animal movement directions, and wave directions are involved.  To analyze such data we need models for observations at locations $\mathbf{s}$ and times $t$, so-called geostatistical models providing structured dependence which is assumed to decay in distance and time.  For example for wave directions in a body of water, we conceptualize a conceptual wave direction at every location and every time.  Thus, the challenge is to introduce structured dependence into angular data. The approach we take begins with models for linear variables over space and time using Gaussian processes.  Then, we use either wrapping or projection to obtain Gaussian processes for circular data.  Altogether, this package will implement first, work developed by Mastrantonio, Jona Lasinio, Gelfand. The models are cast as hierarchical models, with fitting and inference within a Bayesian inference framework. All procedures are written using Rcpp and whenever possible, the computation is parallelized. We use a wave direction dataset as a running example.
-}
+# Abstarct   
+CircSpaceTime is going to be a new R package that eventually will implement most of the models  recently developed for spatial and spatio-temporal interpolation of circular data. Such data are often found in applications where, among the many, wind directions, animal movement directions, and wave directions are involved.  To analyze such data we need models for observations at locations $\mathbf{s}$ and times $t$, so-called geostatistical models providing structured dependence which is assumed to decay in distance and time.  For example for wave directions in a body of water, we conceptualize a conceptual wave direction at every location and every time.  Thus, the challenge is to introduce structured dependence into angular data. The approach we take begins with models for linear variables over space and time using Gaussian processes.  Then, we use either wrapping or projection to obtain Gaussian processes for circular data.  Altogether, this package will implement first, work developed by Mastrantonio, Jona Lasinio, Gelfand. The models are cast as hierarchical models, with fitting and inference within a Bayesian inference framework. All procedures are written using Rcpp and whenever possible, the computation is parallelized. We use a wave direction dataset as a running example.
 
 # Introduction
-CircSpaceTime is an, under construction, R package implementing spatial and spatio-temporal models for circular data. As a first step we start with a purely spatial setting, as initially introduced in \cite{Jona2013}.
+CircSpaceTime is an, under construction, R package implementing spatial and spatio-temporal models for circular data. As a first step we start with a purely spatial setting, as initially introduced in @Jona2013.
 
-There are different approaches to specify valid  circular distributions, see for example \cite{Jammalamadaka2001}. Here we focus on two methods that allow to built a circular distribution starting from  a linear one, namely the wrapping, and the projection.   Under both methods, the resulting distribution has a  complex functional form but introducing a suitable latent variable, the joint distribution of observed and latent variables are easy to handle in a fully Bayesian framework.
+There are different approaches to specify valid  circular distributions, see for example @Jammalamadaka2001. Here we focus on two methods that allow to built a circular distribution starting from  a linear one, namely the wrapping, and the projection.   Under both methods, the resulting distribution has a  complex functional form but introducing a suitable latent variable, the joint distribution of observed and latent variables are easy to handle in a fully Bayesian framework.
 
 ## The wrapping approach 
 
@@ -44,11 +37,11 @@ f_{\Theta}(\theta|\boldsymbol{\psi}) =\sum_{k= -\infty}^{\infty}f_Y(\theta+2\pi 
 \end{equation}
 Between $Y$ and $\Theta$ there is the following relation: $Y = \Theta+2 \pi K$, where $K$ is called the \emph{winding number}. Equation \eqref{eq:w} wraps $f_Y(\cdot|\boldsymbol{\psi})$ around the unit circle and  $\Theta$ is  called the \emph{wrapped} version of $\mathbf{Y}$ with period $2 \pi$, e.g. if ${Y}$ is normally distributed, then $\Theta$ follows a \emph{wrapped normal} (WN) distribution. 
  It is not easy to work directly with equation \eqref{eq:w},  since it requires the evaluation of an infinite sum.
-Following \cite{Coles1998}, if we consider $K$ as   (latent) random variable we can see that $f_{\Theta,K}(\theta,k|\boldsymbol{\psi})= f_Y(\theta+2 \pi k|\boldsymbol{\psi})$, i.e.  $f_Y(\theta+2 \pi k|\boldsymbol{\psi})$ is the  joint density of $(\Theta,K)$, and a marginalization over $K$  gives  equation \eqref{eq:w}. The conditional distribution of $K$, needed for the implementation of the MCMC, is easy to handle since it is proportional to :
+Following @Coles1998, if we consider $K$ as   (latent) random variable we can see that $f_{\Theta,K}(\theta,k|\boldsymbol{\psi})= f_Y(\theta+2 \pi k|\boldsymbol{\psi})$, i.e.  $f_Y(\theta+2 \pi k|\boldsymbol{\psi})$ is the  joint density of $(\Theta,K)$, and a marginalization over $K$  gives  equation \eqref{eq:w}. The conditional distribution of $K$, needed for the implementation of the MCMC, is easy to handle since it is proportional to :
 $f_Y(\theta+2 \pi k|\boldsymbol{\psi})$.
 It is then generally   easier to work with the joint density of $\Theta,K|\boldsymbol{\psi}$, with respect to the one of $\Theta|\boldsymbol{\psi}$, since the former does not require the evaluation of the infinite sum. 
  For example if $Y$ is Gaussian, then the joint density of $(\Theta,K|\boldsymbol{\psi})$ is the normal pdf evaluated at $\theta+2 \pi k$.
-The wrapping approach can be easily  extended to a multivariate setting \cite{Jona2013}. Let $\mathbf{Y} =(Y_1,\dots, Y_p)^{\prime}$ be a $p$-variate vector with pdf $f_{\mathbf{Y}}(\cdot| \boldsymbol{\psi})$, then  $\boldsymbol{\Theta}=(\Theta_1,\dots, \Theta_p)^{\prime}$, with 
+The wrapping approach can be easily  extended to a multivariate setting @Jona2013. Let $\mathbf{Y} =(Y_1,\dots, Y_p)^{\prime}$ be a $p$-variate vector with pdf $f_{\mathbf{Y}}(\cdot| \boldsymbol{\psi})$, then  $\boldsymbol{\Theta}=(\Theta_1,\dots, \Theta_p)^{\prime}$, with 
 $\Theta_i = {Y}_i \text{ mod } 2 \pi \in [0,2 \pi)$
 that is a vector of circular variables. 
  \begin{equation} \label{eq:wmulti}
@@ -64,7 +57,7 @@ Let $\mathbf{Y}= (Y_1,Y_2)$ be a bivariate vector of linear variables with pdf $
 $\mathbf{U} = \frac{\mathbf{Y}}{|| \mathbf{Y} ||}$ 
 represents a point over the unit circle and  the associated angle $\Theta$, where $U_1 = \cos(\Theta)$ and $U_2= \sin (\Theta)$,  is a circular random variable; we have then
 $\tan(\Theta) =\frac{Y_2}{Y_1} = \frac{U_2}{U_1}.$
-Since the  period of the tangent   is $\pi$,  inversion of this function, to obtain $\Theta$,  requires some care.   A common choice is the $\mbox{atan}^*$, formally defined in \cite{Jammalamadaka2001}, pag. 13, that takes into account the signs of $Y_1$ and $Y_2$ to determine   the right portion of the unit circle where $\Theta$ is located.    
+Since the  period of the tangent   is $\pi$,  inversion of this function, to obtain $\Theta$,  requires some care.   A common choice is the $\mbox{atan}^*$, formally defined in @Jammalamadaka2001, [p. 13], that takes into account the signs of $Y_1$ and $Y_2$ to determine   the right portion of the unit circle where $\Theta$ is located.    
 Between $\Theta$ and $\mathbf{Y}$ the following relation exists
 ${\bf Y} = \begin{bmatrix} Y_{1}\\ Y_{2}\end{bmatrix} =R \begin{bmatrix}\cos\theta\\ \sin\theta\end{bmatrix} = R{\bf U},$
 with $R= ||\mathbf{Y}||$. The pdf of $\Theta|\boldsymbol{\psi}$ is 
@@ -73,7 +66,7 @@ f_{\Theta}(\theta|\boldsymbol{\psi}) = \int_{\mathbb{R^+}} r f_{\mathbf{Y}} ((r\
 \end{equation}
 The integral in equation \eqref{eq:dproj}  is not easy to solve and, even when  a closed form exists, the resulting pdf has  a complicated functional structure. 
 
- For example if $\mathbf{Y} \sim N_2(\boldsymbol{\mu},\boldsymbol{\Sigma})$, with $\boldsymbol{\mu}=(\mu_1,\mu_2)^{\prime}$ and 
+For example if $\mathbf{Y} \sim N_2(\boldsymbol{\mu},\boldsymbol{\Sigma})$, with $\boldsymbol{\mu}=(\mu_1,\mu_2)^{\prime}$ and 
  $$
  \boldsymbol{\Sigma} =\left(
  \begin{array}{cc}
@@ -82,7 +75,7 @@ The integral in equation \eqref{eq:dproj}  is not easy to solve and, even when  
  \end{array}
  \right),
  $$
-  then  \cite{Wang2013}
+  then  @Wang2013
  $$
  f_{\Theta}(\theta|\boldsymbol{\psi}) = \frac{\phi_2(\boldsymbol{\mu}|\mathbf{0}_2,\boldsymbol{\Sigma})+a D(\theta) \Phi(D(\theta)|\mathbf{0}, \mathbf{I}_2) \phi(a C(\theta)^{-\frac{1}{2}} (\mu_1 \sin(\theta))-\mu_2 \cos(\theta)   )  }{C(\theta)},
  $$
@@ -95,7 +88,7 @@ The integral in equation \eqref{eq:dproj}  is not easy to solve and, even when  
 
 The joint density of $\Theta,R|\boldsymbol{\psi}$ is $f_{\mathbf{Y}} ((r\cos(\theta),r \sin(\theta))|\boldsymbol{\psi}),$ and 
  if $\mathbf{Y} \sim N_2(\boldsymbol{\mu},\boldsymbol{\Sigma})$ then $f_{\Theta,R}(\theta,r|\boldsymbol{\psi})= r\phi_2 \left( (r\cos(\theta),r \sin(\theta))^{\prime}|\boldsymbol{\mu},\boldsymbol{\Sigma}  \right).$ 
-The projection approach can be easily adapted to obtain a distribution for multivariate circular variable \cite{wang2014}. If $\mathbf{Y}$ is a $2p-$variate linear variable, a $p-$variate vector of (projected)  circular variables is obtained with the following transformation:
+The projection approach can be easily adapted to obtain a distribution for multivariate circular variable @wang2014. If $\mathbf{Y}$ is a $2p-$variate linear variable, a $p-$variate vector of (projected)  circular variables is obtained with the following transformation:
 $\Theta_i =\mbox{atan}^*\left(\frac{Y_{2i }}{Y_{2i- 1}}\right)$, $i=1,\dots,p.$
 The pdf of $\boldsymbol{\Theta}|\boldsymbol{\psi}$, where $\boldsymbol{\Theta} = (\Theta_1,\dots ,\Theta_p)^{\prime}$,  is 
 \begin{equation} \label{eq:dproj1}
@@ -114,13 +107,13 @@ Let $R(\mathbf{s}) = || \mathbf{Y}(\mathbf{s}) || \in \mathbb{R}^+$ be a (latent
 ## Implementation details
 Model parameters are estimated using a MCMC algorithm 
 involving  Gibbs sampler and sometimes Metropolis within Gibbs steps. 
-It is well known that the MCMC  tends to mix really slow (\cite{Andrieu2010}) when latent variable are involved. To speed up the convergence, we try to find an optimal proposal distribution for the Metropolis step using the algorithm described in  \cite{Robert2009}, page 258. With the goal of speeding up the MCMC convergence, is suggested to decrease the dimension of the parameters space, that is, do as much marginalization as possible (\cite{Banerjee2014}). 
-The core estimation is based,  mostly, on loops with thounsands iterations. To improve performances \cite{wickham2015} we implemented everything in \emph{C$++$} and using \texttt{Rcpp} package we can simplify the integration between C$++$ and  R codes \cite{Eddelbuettel2011}. In particular we used the \texttt{RcppArmadillo} package \cite{Eddelbuettel2014} that implement the Armadillo matrix library for it simplicity and elegance \cite{Eddelbuettel2017},  although the \texttt{RcppEigen} is a bit faster \cite{Eddelbuettel2015}.
-For a fast multiple chain estimations we used \texttt{doParallel} package \cite{doParallel}.
+It is well known that the MCMC  tends to mix really slow [@Andrieu2010] when latent variable are involved. To speed up the convergence, we try to find an optimal proposal distribution for the Metropolis step using the algorithm described in  @Robert2009, [p. 258]. With the goal of speeding up the MCMC convergence, is suggested to decrease the dimension of the parameters space, that is, do as much marginalization as possible [Banerjee2014}). 
+The core estimation is based,  mostly, on loops with thounsands iterations. To improve performances [@wickham2015] we implemented everything in \emph{C$++$} and using \texttt{Rcpp} package we can simplify the integration between C$++$ and  R codes [@Eddelbuettel2011]. In particular we used the \texttt{RcppArmadillo} package [@Eddelbuettel2014] that implement the Armadillo matrix library for it simplicity and elegance [@Eddelbuettel2017],  although the \texttt{RcppEigen} is a bit faster [@Eddelbuettel2015].
+For a fast multiple chain estimations we used \texttt{doParallel} package [@doParallel].
 
 
 # Estimation of a model based on the Wrapped Gaussian
-We now consider an example based on  wave directions (and heights). These data are obtained as outputs from a deterministic computer model implemented by Istituto Superiore per la Protezione e la Ricerca Ambientale (ISPRA) \cite{inghilesi2016}. 
+We now consider an example based on  wave directions (and heights). These data are obtained as outputs from a deterministic computer model implemented by Istituto Superiore per la Protezione e la Ricerca Ambientale (ISPRA) [@inghilesi2016]. 
  The computer model starts from a wind forecast model predicting 
  the surface wind over the entire Mediterranean. The hourly evolution of sea wave spectra is obtained by solving energy transport 
  equations using the wind forecast as input. 
@@ -143,14 +136,14 @@ We now isolate a storm event observed at 8pm of April 6, 2010.
 ```{r label="load", message=FALSE, echo=TRUE, warning=FALSE}
 require(CircSpaceTime) 
 data(april)
- attach(april)
- storm1<-apr6.2010[apr6.2010$hour=="20:00",]
+attach(april)
+storm1 <- apr6.2010[apr6.2010$hour == "20:00",]
 ``` 
  
  
 ```{r label="plot1", message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE}
 require(ggmap)
-ggmap(get_map(location = c(min(storm1$Lon), min(storm1$Lat), max(storm1$Lon), max(storm1$Lat)), zoom = 6),
+ggmap(maplayer <-get_map(location = c(min(storm1$Lon), min(storm1$Lat), max(storm1$Lon), max(storm1$Lat)), zoom = 6),
       base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
                               fill = Hm0),
                           data = storm1)) +
@@ -160,7 +153,7 @@ geom_contour() +
   scale_fill_distiller(palette = "RdYlGn") + labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", subtitle = "20:00") +
   coord_equal(expand = 0) +
   theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))
-
+save(maplayer,file = "maplayer.RData")
 ```
 We convert the directions into radians
 ```{r label0"stirm1$Dmr$, message=FALSE, echo=TRUE, warning=FALSE}
@@ -172,70 +165,90 @@ We plot the samples in terms of the sea state
 ```{r label="rosediag1", message=FALSE, echo=TRUE, warning=FALSE}
 require(gridExtra)
 
-r1<-rose_diag(storm1$Dmr[storm1$state=="calm"],bins=15,col=3,template="wind_rose")+
+r1 <- rose_diag(storm1$Dmr[storm1$state == "calm"],
+                bins = 15, color = 3, template = "wind_rose") +
   ggtitle("Calm")
-r2<-rose_diag(storm1$Dmr[storm1$state=="transition"],bins=15,col="yellow",template="wind_rose")+
+r2 <- rose_diag(storm1$Dmr[storm1$state == "transition"],
+                bins = 15, color = "yellow", template = "wind_rose") +
   ggtitle("Transition")
-r3<-rose_diag(storm1$Dmr[storm1$state=="storm"],bins=15,col=2,template="wind_rose")+
+r3 <- rose_diag(storm1$Dmr[storm1$state == "storm"],
+                bins = 15, col = 2, template = "wind_rose") +
   ggtitle("Storm")
-grid.arrange(r1, r2, r3, ncol=3)
+grid.arrange(r1, r2, r3, ncol = 3)
 ```
 
 It is very clear that the variability decreases from \emph{calm} to \emph{storm}, this is very relevant in terms of model choices. (to be completed....)
 First we select the  area where the storm is still in full force
 ```{r label="storm2", message=FALSE, echo=TRUE, warning=FALSE}
-storm2<-storm1[(storm1$state=="storm"),]
+  storm2 <- storm1[(storm1$state == "storm"),]
 ```
 further it is better  to convert the coordinates into UTM as the estimation algorithm uses euclidean distance.  We also hold out $10\%$ of the locations for validation purposes
 
 ```{r label="traintest1", message=FALSE, echo=TRUE, warning=FALSE,cache=TRUE}
- nval<-round(nrow(storm2)*0.1)
- sample.val<-sort(sample(c(1:nrow(storm2)),nval))
- train<-storm2[-sample.val,]
- test<-storm2[sample.val,]
- coords<-storm2[,3:4]
- colnames(coords)=c("X","Y")
- attr(coords,"projection")<-"LL"
- attr(coords,"zone")<-32
- coords2<-PBSmapping::convUL(coords,km=T)
- coords.train<-coords2[-sample.val,]
- coords.test<-coords2[sample.val,]
- distance_matrix<-dist(coords2)
+ nval <- round(nrow(storm2)*0.1)
+ sample.val <- sort(sample(c(1:nrow(storm2)),nval))
+ train <- storm2[-sample.val,]
+ test <- storm2[sample.val,]
+ coords <- storm2[,3:4]
+ colnames(coords) = c("X","Y")
+ attr(coords,"projection") <- "LL"
+ attr(coords,"zone") <- 32
+ coords2 <- PBSmapping::convUL(coords,km = T)
+ coords.train <- coords2[-sample.val,]
+ coords.test <- coords2[sample.val,]
+ distance_matrix <- dist(coords2)
 ```
  We built the distance matrix among grid points to use distances in the definition of prior distribution for the parameter $\rho$. The elements for the definition of prior distributions are organized in a list that will be passed to the function \texttt{WrapSp}.
  The train and test datasets are
 ```{r label="plot2",message=FALSE,echo=FALSE, warning=FALSE, cache=TRUE}
- 
-train1<-ggmap(get_map(location = c(min(train$Lon), min(train$Lat), max(train$Lon), max(train$Lat)), zoom = 8),
-      base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
-                              fill = Hm0),
-                          data = train)) +
+train1 <- ggmap(get_map(location = c(min(train$Lon), min(train$Lat), 
+                                     max(train$Lon), max(train$Lat)), 
+                        zoom = 8), 
+                base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
+                                        fill = Hm0),
+                                    data = train)) +
   geom_raster(alpha = .5, vjust = - 1, hjust = 1) + 
   geom_contour() +
-  geom_spoke(radius = scales::rescale(train$Hm0, c(.01, .2)), angle = train$Dm*pi/180, arrow = arrow(length = unit(.05, 'cm')),alpha=0.3 ) +
-  scale_fill_distiller(palette = "RdYlGn") + labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", subtitle = "train, 20:00") +
+  geom_spoke(radius = scales::rescale(train$Hm0, c(.01, .2)), 
+             angle = train$Dm*pi/180, 
+             arrow = arrow(length = unit(.05, 'cm')), alpha=0.3 ) +
+  scale_fill_distiller(palette = "RdYlGn") + 
+  labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", 
+       subtitle = "train, 20:00") +
   coord_equal(expand = 0) +
-  theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))
-test1<-ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test$Lat)), zoom = 8),
-      base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
-                              fill = Hm0),
-                          data = test)) +
+  theme(legend.position = 'bottom',  
+        legend.direction = 'horizontal',
+        plot.title = element_text(hjust=0.5), 
+        plot.subtitle = element_text(hjust = 0.5))
+test1 <- ggmap(get_map(location = c(min(test$Lon), min(test$Lat),
+                                    max(test$Lon), max(test$Lat)), 
+                       zoom = 8),
+               base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
+                                       fill = Hm0),
+                                   data = test)) +
   geom_raster(alpha = .5, vjust = - 1, hjust = 1) + 
   geom_contour() +
-  geom_spoke(radius = scales::rescale(test$Hm0, c(.01, .2)), angle = test$Dm*pi/180, arrow = arrow(length = unit(.05, 'cm')),alpha=0.3 ) +
-  scale_fill_distiller(palette = "RdYlGn") + labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", subtitle = "test, 20:00") +
+  geom_spoke(radius = scales::rescale(test$Hm0, c(.01, .2)), 
+             angle = test$Dm*pi/180, 
+             arrow = arrow(length = unit(.05, 'cm')), alpha=0.3 ) +
+  scale_fill_distiller(palette = "RdYlGn") + 
+  labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", 
+       subtitle = "test, 20:00") +
   coord_equal(expand = 0) +
-  theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))
+  theme(legend.position = 'bottom',  
+        legend.direction = 'horizontal',
+        plot.title = element_text(hjust=0.5), 
+        plot.subtitle = element_text(hjust = 0.5))
 grid.arrange(train1,test1,ncol=2)
 
 ```
 
-we now compute the empirical practical range interval and we are going to use it in the definition of the prior for the $\rho$ parameter. 
+We now compute the empirical practical range interval and we are going to use it in the definition of the prior for the $\rho$ parameter. 
 ```{r label="rhoprior1", message=FALSE, echo=TRUE, warning=FALSE}
  rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
  rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
 ```
-The function \texttt{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution as proposed in \cite{Jona2013}.As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
+The function \texttt{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution as proposed in @Jona2013.As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
 \texttt{alpha, rho, beta, sigma2} vectors with the thinned chains of the simulated model parameters, $k$ a matrix with as many rows as the data and colums the length of thinned chains and \texttt{corr\_fun} a string with the type of spatial correlation chosen.
 In our example we choose an exponential correlation, we run 2 chains parallelizing the procedure, (qui ci va una descrizione delle prior e il meccanismo adattativo)
 
@@ -265,9 +278,10 @@ In our example we choose an exponential correlation, we run 2 chains parallelizi
  n_chains=2,
  parallel=T,
  n_cores=2)
+ save(mod, file = "mod.RData")
 ```
 
-We can control the convergence of the MCMC using the function \texttt{ConvCheck}that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
+We can control the convergence of the MCMC using the function \texttt{ConvCheck} that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
 
 ```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
 check<- ConvCheck(mod)
@@ -290,12 +304,11 @@ Pred = WrapKrig(
    x_oss = train$Dmr
  )
 ```
-Once the estimates are obtained we compute the Average Prediction Error again following \cite{Jona2013}
-```{r label=?"APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-APE=APEcirc(
-  real = test$Dmr,
-   sim = Pred$Prev_out,
-bycol=F
+Once the estimates are obtained we compute the Average Prediction Error again following @Jona2013
+```{r label="APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
+APE <- APEcirc( real = test$Dmr,
+                sim = Pred$Prev_out,
+                bycol = F
 )
 APE
 ```
@@ -303,7 +316,7 @@ APE
 To very how things changes when we have to deal with largere variability we run the same approach on data from the "calm" area. This time as the area includes 708 points, we are going to use 50$\%$ of them for estimation and the remaining for validation.
 
 
-```{r label"calma1",message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE,eval=FALSE}
+```{r label="calma1",message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE,eval=FALSE}
 calma<-apr6.2010[apr6.2010$state=="calm" & apr6.2010$hour=="20:00",]
 calma$Dmr<-calma$Dm*pi/180
 nval<-round(0.5*nrow(calma))
@@ -436,3 +449,4 @@ ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test
 
 # Estimation of Projected Normal spatial models
 
+# References

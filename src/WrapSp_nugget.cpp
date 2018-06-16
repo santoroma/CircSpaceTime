@@ -555,4 +555,3 @@ List WrapSpRcpp_nugget(
                         Named("corr_fun") = corr_fun);
   }
   }
-

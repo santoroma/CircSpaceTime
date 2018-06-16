@@ -78,8 +78,8 @@ List WrapSpRcpp(
   logdet_cor = 0.0;
   arma::log_det(logdet_cor, sign, Cor_inv);
   //  Cor_inv = arma::inv_sympd(Cor_inv);
-//  double cond_numb = rcond(Cor_inv);
-//  Rcout << " Corr Matrix: reciprocal of condition number " << cond_numb << "\n Corr Matrix: ln(determinant) " << logdet_cor<<std::endl;
+  //  double cond_numb = rcond(Cor_inv);
+  //  Rcout << " Corr Matrix: reciprocal of condition number " << cond_numb << "\n Corr Matrix: ln(determinant) " << logdet_cor<<std::endl;
   Cor_inv = arma::inv_sympd(Cor_inv);
   //Cor_inv = arma::inv(.5*(Cor_inv+Cor_inv.t()));
   // Cor_inv.save("Cor_inv_POST.csv", arma::csv_ascii);
@@ -473,8 +473,8 @@ List WrapSpRcpp(
       k_out_add(i,iMCMC2) = k[i];
     }
     /****************
-    End Second For
-    ******************/
+     End Second For
+     ******************/
 
   }
 
@@ -493,4 +493,3 @@ List WrapSpRcpp(
                         Named("corr_fun") = corr_fun);
   }
   }
-

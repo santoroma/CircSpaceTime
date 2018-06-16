@@ -1,6 +1,8 @@
 library(Rcpp)
 sourceCpp("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/src/ProjSp.cpp") 
+
 source("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/R/ProjSp.R") 
+
 
 rmnorm=function(n = 1, mean = rep(0, d), varcov) 
 {
@@ -21,9 +23,9 @@ Dist = as.matrix(dist(coords))
 
 rho     = 0.5
 rho0    = 0.05
-sigma2  = 2
+sigma2  = 0.3
 alpha   = c(0.5,-0.5) 
-V = matrix(c(sigma2,sigma2*0.5*rho,sigma2*0.5*rho,1),ncol=2) 
+V = matrix(c(sigma2,sigma2^0.5*rho,sigma2^0.5*rho,1),ncol=2) 
 S = exp(-rho0*Dist)
 SIGMA = kronecker(S,V)
 
@@ -37,9 +39,11 @@ for(i in 1:n)
   r[i]     = Y[1+(i-1)*2]/cos(theta[i])
 }
 
+val = sample(1:n,round(n*0.1))
+
 mod = ProjSp(
-  theta     = theta,
-  coords    = coords,
+  theta     = theta[-val],
+  coords    = coords[-val,],
   start   = list("alpha"      = c(1,1),
                  "rho0"     = c(0.1),
                  "rho"      = c(.1),
@@ -52,8 +56,8 @@ mod = ProjSp(
                  "alpha_sigma" = diag(100,2)
   ) ,
   sd_prop   = list( "sigma2" = 0.5, "rho0" = 0.5, "rho" = 0.5,"beta" = .5, "sdr" = sample(.05,length(theta), replace = T)),
-  iter    = 1000,
-  bigSim    = c(burnin = 20, thin = 10),
+  iter    = 5000,
+  bigSim    = c(burnin = 3000, thin = 2),
   accept_ratio = 0.234,
   adapt_param = c(start = 1, end = 1000, esponente = 0.9, sdr_update_iter = 50),
   corr_fun = "exponential",
@@ -75,6 +79,27 @@ abline(h=rho0[1])
 plot(mod[[1]]$rho[],type="l")
 abline(h=rho[1])
 
+
+sourceCpp("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/src/ProjKrig.cpp") 
+source("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/R/ProjKrig.R") 
+Krig = ProjKrig(
+  ProjSp_out = mod,
+  coords_obs =  coords[-val,],
+  coords_nobs =  coords[val,],
+  theta_oss = theta[-val]
+)
+
+
+par(mfrow=c(1,1))
+i=1
+plot(Krig$Prev_out[i,],type="l")
+abline(h= theta[val][i],col=2)
+
+
+library(circular)
+MeanCirc = apply(Krig$Prev_out,1,mean.circular)
+plot(theta[val],MeanCirc)
+abline(a=0,b=1)
  # ## ## ## ## ## ## ##
  #  ## Sim
  #  ## ## ## ## ## ## ##

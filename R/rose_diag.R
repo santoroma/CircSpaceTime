@@ -1,6 +1,6 @@
-#' Rose diagram in ggplot2 inspired from rose.diag in package circular.
+##' Rose diagram in ggplot2 inspired from rose.diag in package circular.
 #'
-#' @param x A vector of circular coordinates in radiants $[0,2 \pi)$.
+#' @param x A vector of circular coordinates in radiants \eqn{[0,2 \pi)}.
 #' @param bins Number of bins
 #' @param color Color of the line and of the fill
 #' @param alpha Transparency

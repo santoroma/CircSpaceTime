@@ -289,7 +289,7 @@ check$Rhat
 ```
 and the traceplots always remebering that \texttt{alpha} is a circular variable
 ```{r label="trace1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-par(mfrow=c(2,2))
+#par(mfrow=c(2,2))
  coda::traceplot(check$mcmc)
 ```
 Convergence is clearly achieved we can now proceed to estimate the values on the test sites using the posterior samples we just obtained.
@@ -367,7 +367,7 @@ We check for convergence
 ```{r label="calmacheck1", message=FALSE, echo=c(2,3,4,5), warning=FALSE, eval=TRUE}
 check <- ConvCheck(mod)
 check$Rhat
-par(mfrow=c(2,2))
+#par(mfrow=c(2,2))
 coda::traceplot(check$mcmc)
 ```
 
@@ -406,7 +406,7 @@ Again we check the chains convergence:
 load("calma.RData")
 check.up<- ConvCheck(mod.up)
 check.up$Rhat
-par(mfrow=c(2,2))
+#par(mfrow=c(2,2))
 coda::traceplot(check.up$mcmc)
 ```
 

@@ -1,12 +1,8 @@
-library(Rcpp)
-sourceCpp("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/src/ProjSp.cpp") 
+library(CircSpaceTime)
 
-source("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/R/ProjSp.R") 
-
-
-rmnorm=function(n = 1, mean = rep(0, d), varcov) 
+rmnorm=function(n = 1, mean = rep(0, d), varcov)
 {
-    d <- if (is.matrix(varcov)) 
+    d <- if (is.matrix(varcov))
         ncol(varcov)
     else 1
     z <- matrix(rnorm(n * d), n, d) %*% chol(varcov)
@@ -14,7 +10,7 @@ rmnorm=function(n = 1, mean = rep(0, d), varcov)
     return(y)
 }
 
-#### 
+####
 # SImulaiton
 ####
 n = 100
@@ -24,8 +20,8 @@ Dist = as.matrix(dist(coords))
 rho     = 0.5
 rho0    = 0.05
 sigma2  = 0.3
-alpha   = c(0.5,-0.5) 
-V = matrix(c(sigma2,sigma2^0.5*rho,sigma2^0.5*rho,1),ncol=2) 
+alpha   = c(0.5,-0.5)
+V = matrix(c(sigma2,sigma2^0.5*rho,sigma2^0.5*rho,1),ncol=2)
 S = exp(-rho0*Dist)
 SIGMA = kronecker(S,V)
 
@@ -63,7 +59,7 @@ mod = ProjSp(
   corr_fun = "exponential",
    kappa_matern = .5,
   n_chains = 1 ,
-  parallel = FALSE ,
+  parallel = TRUE ,
   n_cores = 2
 )
 
@@ -80,9 +76,7 @@ plot(mod[[1]]$rho[],type="l")
 abline(h=rho[1])
 
 
-sourceCpp("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/src/ProjKrig.cpp") 
-source("/Users/gianlucamastrantonio/Dropbox/github/CircSpaceTime/R/ProjKrig.R") 
-Krig = ProjKrig(
+Krig <- ProjKrig(
   ProjSp_out = mod,
   coords_obs =  coords[-val,],
   coords_nobs =  coords[val,],

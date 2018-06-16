@@ -16,12 +16,12 @@
 #'
 #' @format
 #' \describe{
-#' \item{Date}  Date, format: yyyy-mm-dd
-#' \item{hour}  Factor w/ 24 levels corresponding to the 24h, format: 00:00
-#' \item{Lon, Lat} decimal longitude and latitude
-#' \item{Hm0}   Significant wave heights in meters
-#' \item{Dm}  Direction of waves in degrees (North=0)
-#' \item{state} Factor w/ 3 levels "calm","transition", "storm"
+#' \item{Date}  {Date, format: yyyy-mm-dd}
+#' \item{hour}  {Factor w/ 24 levels corresponding to the 24h, format: 00:00}
+#' \item{Lon, Lat} {decimal longitude and latitude}
+#' \item{Hm0}   {Significant wave heights in meters}
+#' \item{Dm}  {Direction of waves in degrees (North=0)}
+#' \item{state} {Factor w/ 3 levels "calm","transition", "storm"}
 #' }
 #' @source  R. Inghilesi, A. Orasi & F. Catini (2016) The ISPRA Mediterranean Coastal Wave Forecasting system: evaluation and perspectives  Journal of Operational Oceanography Vol. 9 , Iss. sup1 \url{http://www.tandfonline.com/doi/full/10.1080/1755876X.2015.1115635}
 "april"
@@ -45,13 +45,14 @@
 #'
 #' @format
 #' \describe{
-#' \item{object} each element of the list is one hour of data on the entire area
-#' \item{Date}  Date, format: yyyy-mm-dd
-#' \item{hour}  Factor w/ 24 levels corresponding to the 24h, format: 00:00
-#' \item{Lon, Lat} decimal longitude and latitude
-#' \item{Hm0}   Significant wave heights in meters
-#' \item{Dm}  Direction of waves in degrees (North=0)
-#' \item{state} Factor w/ 3 levels "calm","transition", "storm"
+#' \item{object} {each element of the list is one hour of data on the entire area}
+#' \item{Date}  {Date, format: yyyy-mm-dd}
+#' \item{hour}  {Factor w/ 24 levels corresponding to the 24h, format: 00:00}
+#' \item{Lon, Lat} {decimal longitude and latitude}
+#' \item{Hm0}   {Significant wave heights in meters}
+#' \item{Dm}  {Direction of waves in degrees (North=0)}
+#' \item{state} F{actor w/ 3 levels "calm","transition", "storm"}
 #' }
 #' @source  R. Inghilesi, A. Orasi & F. Catini (2016) The ISPRA Mediterranean Coastal Wave Forecasting system: evaluation and perspectives  Journal of Operational Oceanography Vol. 9 , Iss. sup1 \url{http://www.tandfonline.com/doi/full/10.1080/1755876X.2015.1115635}
 "may"
+

@@ -1,6 +1,8 @@
-#'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
-#' as proposed in
- #' @param  x a vector of n circular data in [0,2\pi)]
+#' ProjSp.
+#'
+#'  \code{ProjSp} produces samples from the Wrapped Normal spatial model  posterior distribution
+#' as proposed in 		Giovanna Jona LasinioAlan GelfandMattia Jona-Lasinio Spatial analysis of wave direction data using wrapped Gaussian processes 		The Annals of Applied Statistics 6(4) (2013)  		DOI10.1214/12-AOAS576
+#' @param  x a vector of n circular data in \eqn{[0,2\pi)}
 #' @param  coords an nx2 matrix with the sites coordinates
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
@@ -11,14 +13,14 @@
 #' }
 #' @param  prior a list of 4 elements to define priors  for the model parameters:
 #' \describe{
-#' \item{alpha} a vector of 2 elements the mean and the variance of  a Gaussian distribution, default is  mean \eqn{\pi} and variance 1,
-#' \item{rho}  a vector of 2 elements defining the shape and rate of a gamma distribution,
-#' \item{ sigma2}  a vector of 2 elements defining the shape and rate of an inverse-gamma distribution
-#' \item{beta} a vector of 3 elements (c,a,b). For the nugget (if present) we use the parametrization \eqn{\beta=nugget/\sigma^2} and then a scaled Beta distribution is chosen as prior i.e. c*Beta(a,b), with a,b,c>0.
+#' \item{alpha} {a vector of 2 elements the mean and the variance of  a Gaussian distribution, default is  mean \eqn{\pi} and variance 1,}
+#' \item{rho}  {a vector of 2 elements defining the shape and rate of a gamma distribution,}
+#' \item{ sigma2}  {a vector of 2 elements defining the shape and rate of an inverse-gamma distribution,}
+#' \item{beta} {a vector of 3 elements (c,a,b). For the nugget (if present) we use the parametrization \eqn{\beta=nugget/\sigma^2} and then a scaled Beta distribution is chosen as prior i.e. c*Beta(a,b), with a,b,c>0.}
 #' }
 #' @param sd.prop= list of 3 elements. To run the MCMC for the rho and sigma2 parameters we use an adaptive metropolis and in sd.prop we build a list of initial guesses for these two parameters and the beta parameter
 #' @param nugget  logical, if the measurement error term must be added, default to TRUE
-#' @paramiter  iter number of iterations
+#' @param iter  iter number of iterations
 #' @param bigSim a vector of 2 elements with  the burnin and the chain thinning
 #' @param accept.ratio it is the desired acceptance ratio in the adaptive metropolis
 #' @param adapt.param a vector of 3 elements giving the iteration number at which the adaptation must start  and end. The third element (esponente)  must be a number in (0,1) is a parameter ruling the speed of changes in the adaptation algorithm, it is recommended to set it close to 1, if it is too small  non positive definite matrices may be generated and the program crashes.
@@ -28,7 +30,7 @@
 #' @param parallel logical, if the multiplechains  must be lunched in parallel
 #' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
 #'@return it returns a list of \code{n_chains} lists each with elements
-#' \code{alpha}, \code{rho}, \code{beta}, \code{sigma2} vectors with the thinned chains, \code{k} a matrix with \code{nrow=length(x)} and \cod{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
+#' \code{alpha}, \code{rho}, \code{beta}, \code{sigma2} vectors with the thinned chains, \code{k} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
 #' @examples
 #' data(april)
 #' attach(april)
@@ -59,7 +61,7 @@
 #' ### Now we build the information for the priors
 #' rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 #' rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
-#' Now run the posterior estimation see \\code{\link{WrapSp}} for details
+#' Now run the posterior estimation see \code{\link{WrapSp}} for details
 #' start1=list("alpha"      = c(2*pi,3.14),
 #'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
 #'	 "sigma2"    = c(1,0.1),
@@ -95,6 +97,7 @@
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' #### a more complex situation, when calm and transition states are mixed
 #' data(may6.2010.00)
+
 
 ProjSp  <- function(
   theta     = theta,

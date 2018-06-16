@@ -1,15 +1,16 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 #include <math.h>
+#include "help_fun.h"
 using namespace Rcpp;
 #define _USE_MATH_DEFINES
 
-arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
-    // Thanks to Ahmadou Dicko http://gallery.rcpp.org/articles/simulate-multivariate-normal/
-    int ncols = sigma.n_cols;
-    arma::mat Y = arma::randn(n, ncols);
-    return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
-}
+// arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
+//     // Thanks to Ahmadou Dicko http://gallery.rcpp.org/articles/simulate-multivariate-normal/
+//     int ncols = sigma.n_cols;
+//     arma::mat Y = arma::randn(n, ncols);
+//     return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
+// }
 
 // [[Rcpp::export]]
 	 List ProjKrigCpp(
@@ -21,10 +22,10 @@ arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
   	// generatore random
 		GetRNGstate();
 		int KrigI,i,h;
-         
-         arma::vec App_sim(2);
-         arma::vec Mapp_prev(2);
-         arma::mat Vapp_prev(2,2);
+
+    arma::vec App_sim(2);
+    arma::vec Mapp_prev(2);
+    arma::mat Vapp_prev(2,2);
 		arma::vec M_prev(2*nprev);
 		arma::mat V_prev(2*nprev,2*nprev);
 		arma::mat Cor_inv0(n,n), Cov2(2,2), Cor_inv(2*n,2*n);
@@ -86,7 +87,7 @@ arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
   		Cov2(1,1) = 1.;
 
 
-  		Cor_inv = arma::kron(arma::inv_sympd(Cor_inv0), arma::inv(Cov2));
+  		Cor_inv = arma::kron(arma::inv(Cor_inv0), arma::inv(Cov2));
 
     if(corr_fun == "exponential"){
       for(i=0;i<nprev;i++)
@@ -124,27 +125,27 @@ arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
 
 			for(i=0;i<nprev;i++)
 			{
-                
-                
+
+
 				Mapp_prev(0) = alpha(0,KrigI) + M_prev(2*i);
 			    Mapp_prev(1) =  alpha(1,KrigI) + M_prev(2*i+1);
-                
+
 				Vapp_prev(0, 0) = Cov2(0,0) - V_prev(2*i, 2*i);
 				Vapp_prev(0, 1) = Cov2(0,1) - V_prev(2*i, 2*i+1);
                 Vapp_prev(1, 0) = Cov2(1,0) - V_prev(2*i+1, 2*i);
                 Vapp_prev(1, 1) = Cov2(1,1) - V_prev(2*i+1, 2*i+1);
-                
+
                 App_sim = mvrnormArma(1, Mapp_prev, Vapp_prev).t();
                 Prev_out_add(i,KrigI) = atan2(App_sim(1),App_sim(0));
-                
+
                 M_out_add(2*i,KrigI) = Mapp_prev[0];
                 M_out_add(2*i+1,KrigI) = Mapp_prev[1];
-                
+
                 V_out_add(4*i,KrigI) = Vapp_prev(0, 0);
                 V_out_add(4*i+1,KrigI) = Vapp_prev(0, 1);
                 V_out_add(4*i+2,KrigI) = Vapp_prev(1, 0);
                 V_out_add(4*i+3,KrigI) = Vapp_prev(1, 1);
-                
+
 			}
 //            for(i=0;i<nprev;i++)
 //            {
@@ -158,7 +159,7 @@ arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
 //                V_out_add(2*i+1,KrigI) = V_prev[2*i+1];
 //            }
 		 }
-         
+
 		 PutRNGstate();
 
 		return List::create(Named("M_out") = M_out_add,

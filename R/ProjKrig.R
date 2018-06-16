@@ -1,17 +1,17 @@
-#' Kriging using wrapped normal model.
+#' Kriging using Proj normal model.
 #'
 #' \code{ProjKrig} function computes the Kriging prediction for circular spatial data
 #' as proposed in G Jona-Lasinio, A Gelfand, M Jona-Lasinio Spatial analysis of wave direction data using wrapped gaussian processes - The Annals of Applied Statistics, 2012,V. 6, 4,  pp1478-1498
 #'
-#' @param WrapSp_out the functions takes the output of \code{WrapSp} function
+#' @param ProjSp_out the functions takes the output of \code{ProjSp} function
 #' @param coords_obs coordinates of observed locations (in UTM)
 #' @param coords_nobs coordinates of unobserved locations (in UTM)
-#' @param x_oss observed values
+#' @param theta_oss observed values
 #' @return a list of 3 elements
 #' \describe{
-#'	\item{M_out} the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{V_out} the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{Prev_out} are the posterior predicted  values at the unobserved locations.
+#'	\item{M_out} {the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
+#' \item{V_out} {the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
+#' \item{Prev_out} {are the posterior predicted  values at the unobserved locations.}
 #' }
 #' @examples
 #' data(april)
@@ -41,7 +41,7 @@
 #' ### Now we build the information for the priors
 #' rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 #' rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
-#' Now run the posterior estimation see \\code{\link{WrapSp}} for details
+#' Now run the posterior estimation see \code{\link{WrapSp}} for details
 #' start1=list("alpha"      = c(2*pi,3.14),
 #'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
 #'	 "sigma2"    = c(1,0.1),
@@ -88,9 +88,9 @@ ProjKrig <- function(
 #  MeanCirc <- circular::mean.circular(x_oss)
 #  x_oss <- (x_oss - MeanCirc + pi) %% (2*pi)
 
-  AppName = names(ProjSp_out[[1]])
-  AppName[1] = "rstar"
-  names(ProjSp_out[[1]]) =   AppName
+  AppName <- names(ProjSp_out[[1]])
+  AppName[1] <- "rstar"
+  names(ProjSp_out[[1]]) <-   AppName
 
   pp <- unlist(ProjSp_out)
   sigma2 <- as.numeric(pp[regexpr("sigma2",names(pp)) == 1])

@@ -1,14 +1,15 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
+#include "help_fun.h"
 using namespace Rcpp;
 #define _USE_MATH_DEFINES
 
-arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
-// Thanks to Ahmadou Dicko http://gallery.rcpp.org/articles/simulate-multivariate-normal/
-int ncols = sigma.n_cols;
-arma::mat Y = arma::randn(n, ncols);
-return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
-}
+// arma::mat mvrnormArma(int n, arma::vec mu, arma::mat sigma) {
+// // Thanks to Ahmadou Dicko http://gallery.rcpp.org/articles/simulate-multivariate-normal/
+// int ncols = sigma.n_cols;
+// arma::mat Y = arma::randn(n, ncols);
+// return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
+// }
 
 const double log2pi = std::log(2.0 * M_PI);
 
@@ -48,7 +49,7 @@ List ProjSpRcpp(
   //                Varie ed eventuali
   // *****************************************/
 
-   
+
   int i;
   arma::vec y(2*n_j);
   for(i=0;i<n_j;i++)
@@ -203,7 +204,7 @@ List ProjSpRcpp(
   // to save
   int nSamples_save = iter_2;
 
-    
+
   NumericVector Prev(n_j);
   NumericVector sigma2_out_add(nSamples_save), rho0_out_add(nSamples_save), rho_out_add(nSamples_save);
   arma::mat alpha_out_add(2,nSamples_save);
@@ -219,13 +220,13 @@ List ProjSpRcpp(
   int BurinOrThin = burnin;
   arma::vec r_MH(n_j), r_MH_sum(n_j);
   int ii;
-   
+
   for(ii=0; ii<n_j; ii++){
     r_MH_sum(ii) = 0;
   }
 
-  double dens_y;
-  double dens_y_p;
+  // double dens_y;
+  // double dens_y_p;
   //    int nnn=0;
 
   for(iMCMC2=0;iMCMC2<iter_2;iMCMC2++)
@@ -241,11 +242,11 @@ List ProjSpRcpp(
       Sample 2D-Gaussian Mean
       ******************/
 
-        
+
         Valpha = inv(X.t()*Cor_inv*X + inv(prior_alpha_sigma));
-        
+
       Malpha = Valpha*(X.t()*Cor_inv*y + inv(prior_alpha_sigma)*prior_alpha_mu);
-        
+
       alpha = mvrnormArma(1, Malpha, Valpha).t();
 
       for(i=0;i<n_j;i++)
@@ -285,7 +286,7 @@ List ProjSpRcpp(
 
       sim_sp_p = app_Mat_ad_sp*sim_sp_p;
       sim_sp_p = One*sim_sp + sim_sp_p;
-       
+
       sigma2_p = exp(sim_sp_p[0]);
       rho0_p  =  (exp(sim_sp_p[1]) * prior_rho0[1] + prior_rho0[0]) / (1.0 + exp(sim_sp_p[1]));
       rho_p  =  (exp(sim_sp_p[2]) * prior_rho[1] + prior_rho[0]) / (1.0 + exp(sim_sp_p[2]));
@@ -410,7 +411,7 @@ List ProjSpRcpp(
 //
 //          dens_y = -0.5*(y-D)
 //          dens_y_p = dmvnrm_arma(y_p, D,Cor_inv,true);
-          
+
           // i nomi andrebbero cambiati, al posto di _sp ci andrebbe _r
           app_MH_D_sp = Cor_inv*(y-D);
           app_MH_N_sp = Cor_inv*(y_p-D);

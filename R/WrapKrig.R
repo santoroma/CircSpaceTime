@@ -9,9 +9,9 @@
 #' @param x_oss observed values
 #' @return a list of 3 elements
 #' \describe{
-#'	\item{M_out} the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{V_out} the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp
-#' \item{Prev_out} are the posterior predicted  values at the unobserved locations.
+#'	\item{M_out} {the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
+#' \item{V_out} {the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
+#' \item{Prev_out} {are the posterior predicted  values at the unobserved locations.}
 #' }
 #' @examples
 #' data(april)
@@ -78,7 +78,7 @@
 #' x_oss = train$Dmr
 #' )
 
-WrapKrig = function(
+WrapKrig <- function(
   WrapSp_out,
   coords_obs,
   coords_nobs,

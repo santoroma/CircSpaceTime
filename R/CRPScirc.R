@@ -1,14 +1,16 @@
-#' Testing Convergence of mcmc using package coda
+#' The Continuous Ranked Probability Score for Circular Variables.
 #'
-#' \code{ConvCheck} returns an mcmc.list (mcmc) to be used with the \code{coda} package
-#' and the Potential scale reduction factors (Rhat) of the model parameters computed using the \code{gelman.diag} function in the coda package
+#' \code{CRPScirc} function computes the The Continuous Ranked Probability Score for Circular Variables
+#' as proposed in  Grimit, Eric P., Tilmann Gneiting, Veronica J. Berrocal and Nicholas Alexander Johnson. “The Continuous Ranked Probability Score for Circular Variables and its Application to Mesoscale Forecast Ensemble Verification.” (2005).
 #'
-#' @param mod is a list with \eqn{m\ge 1} elements, one for each chain generated using  \code{\link{WrapSp}}
-#' @param startit  is an integer, the iteration at which the chains start (required to build the mcmc.list)
-#' @param thin  is an integer the thinning applied to chains
-#' @return a list of two elements,
-#' @return mcmc an \code{mcmc.list} (mcmc) to be used with the \code{coda} package
-#' @return Rhat  the Potential scale reduction factors  of the model parameters computed using the \code{gelman.diag} function in the \code{coda} package
+#' @param real a vector of the  values of the process at the test locations
+#' @param sim a matrix with nrow the test locations and ncol the number of posterior samples from the posterior distributions  by \code{\link{WrapKrig}}
+#' @param bycol logical it is TRUE if the columns of sim represent the observations and the rows the posterior samples, the default value is FALSE
+#' @return a list
+#'\describe{
+#' \item{CRPSvec} {a vector of CRPS one element for each test point}
+#' \item{CRPS} {the  overall mean}
+#' }
 #' @examples
 #' data(april)
 #' attach(april)
@@ -63,27 +65,31 @@
 #' n_chains=2,
 #' parallel=T,
 #' n_cores=2)
-#' check<-ConvCheck(mod)
-#' check$Rhat ### convergence has been reached
-#' par(mfrow=c(2,2))
-#' coda::traceplot(check$mcmc)
-#' #or/and
-#' require(coda)
-#' plot(check$mcmc) # remember that alpha is a circular variable
+#' Pred = WrapKrig(
+#' #   # Use the output of WrapSp
+#' WrapSp_out = mod,
+#' #   # The coordinates for the observed points
+#' coords_obs = coords.train,
+#' #   # the coord of the validation points
+#' coords_nobs = coords.test,
+#' #   #the observed circular values
+#' x_oss = train$Dmr
+#' )
+#'
+#' CRPS=CRPScirc(real = test$Dmr, sim = Pred$Prev_out, bycol=F)
+#' CRPS$CRPS ## very small as during storms variability is  small and estimation results are very precise
 
-ConvCheck <- function(mod, startit = 15000, thin = 10){
-n <- length(mod)
-#nit <- length(mod[[1]]$alpha)
-m1 <- list(n)
-for (i in 1:n) {
-	m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
-	                      beta = mod[[i]]$beta,
-	                      rho = mod[[i]]$rho,
-	                      sigma2 = mod[[i]]$sigma2)
-m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
+CRPScirc = function(real,sim,bycol=F){
+	if(bycol==T){
+		sim = t(sim)}
+	n = length(real)
+	nsim = ncol(sim)
+	CRPS = c()
+	for(i in 1:n)
+	{
+			dist = as.matrix(circular::dist.circular(c(real[i],sim[i,]),method="angularseparation"))
+			CRPS[i] = sum(dist[1,-1])/nsim-sum(dist[-1,-1])/(2*nsim^2)
+	}
+	return(list(CRPSvec=CRPS,CRPS=mean(CRPS)))
 }
-m1 <- coda::mcmc.list(m1)
-rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
-                        autoburnin = TRUE)
-return(list(Rhat = rb, mcmc = m1))
-}
+

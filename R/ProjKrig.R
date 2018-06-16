@@ -87,12 +87,17 @@ ProjKrig <- function(
 {
 #  MeanCirc <- circular::mean.circular(x_oss)
 #  x_oss <- (x_oss - MeanCirc + pi) %% (2*pi)
+
+  AppName = names(ProjSp_out[[1]])
+  AppName[1] = "rstar"
+  names(ProjSp_out[[1]]) =   AppName
+
   pp <- unlist(ProjSp_out)
   sigma2 <- as.numeric(pp[regexpr("sigma2",names(pp)) == 1])
   rho <- as.numeric(pp[regexpr("rho",names(pp)) == 1])
   rho0 <- as.numeric(pp[regexpr("rho",names(pp)) == 1])
-  row.r <- nrow(ProjSp_out[[1]]$r)
-  pp2 <- as.numeric(pp[regexpr("r",names(pp)) == 1])
+  row.r <- nrow(ProjSp_out[[1]]$rstar)
+  pp2 <- as.numeric(pp[regexpr("rstar",names(pp)) == 1])
   r <- matrix(pp2,nrow = row.r)
   row.alpha <- nrow(ProjSp_out[[1]]$alpha)
   pp2 <- as.numeric(pp[regexpr("alpha",names(pp)) == 1])

@@ -387,7 +387,7 @@ List ProjSpRcpp(
       ******************/
       for(ii=0; ii<n_j; ii++){
         y_p[2*ii] = y[2*ii] ;
-        y_p[2*ii+1] = y_p[2*ii+1];
+        y_p[2*ii+1] = y[2*ii+1];
       }
       arma::vec D = X*alpha;
       for(i=0; i<n_j; i++)
@@ -405,12 +405,21 @@ List ProjSpRcpp(
         y_p[2*i] = r_p[i]*cos(theta[i]);
         y_p[2*i+1] = r_p[i]*sin(theta[i]);
 
-        dens_y = dmvnrm_arma(y,D,Cor_inv,true);
-        dens_y_p = dmvnrm_arma(y_p, D,Cor_inv,true);
+//        dens_y = dmvnrm_arma(y,D,Cor_inv,true);
+//        dens_y_p = dmvnrm_arma(y_p, D,Cor_inv,true);
+//
+//          dens_y = -0.5*(y-D)
+//          dens_y_p = dmvnrm_arma(y_p, D,Cor_inv,true);
+          
+          // i nomi andrebbero cambiati, al posto di _sp ci andrebbe _r
+          app_MH_D_sp = Cor_inv*(y-D);
+          app_MH_N_sp = Cor_inv*(y_p-D);
+          MH_D_sp = -0.5*arma::dot(app_MH_D_sp,(y-D));
+          MH_N_sp = -0.5*arma::dot(app_MH_N_sp, (y_p-D));
         // Testing if the new value can be acceppted
         arma::vec temp(2);
         temp[0] = 0.;
-        temp[1] = dens_y_p - dens_y + log(r_p[i]) - log(r[i]);
+        temp[1] = MH_N_sp  - MH_D_sp  + 2*log(r_p[i]) - 2*log(r[i]);
         r_MH[i] = arma::min(temp);
         r_MH[i] = exp(r_MH[i]);
         r_MH_sum[i] = r_MH_sum[i] + r_MH[i];
@@ -422,6 +431,9 @@ List ProjSpRcpp(
             y[2*i+1] = y_p[2*i+1];
             yMalpha[2*i] = y[2*i]-alpha[0];
             yMalpha[2*i+1] = y[2*i+1]-alpha[1];
+          }else{
+              y_p[2*i] = y[2*i];
+              y_p[2*i+1] = y[2*i+1];
           }
         }
 
@@ -433,7 +445,7 @@ List ProjSpRcpp(
 
     BurinOrThin = thin;
 
-    for(i=0;i<1;i++)
+    for(i=0;i<2;i++)
     {
     alpha_out_add(i,iMCMC2) = alpha[i];
     }

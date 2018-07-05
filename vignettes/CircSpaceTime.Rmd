@@ -188,7 +188,9 @@ further it is better  to convert the coordinates into UTM as the estimation algo
  nval <- round(nrow(storm2)*0.1)
  sample.val <- sort(sample(c(1:nrow(storm2)),nval))
  train <- storm2[-sample.val,]
+ save(train, file = "train.RData")
  test <- storm2[sample.val,]
+ save(test, file = "test.RData")
  coords <- storm2[,3:4]
  colnames(coords) = c("X","Y")
  attr(coords,"projection") <- "LL"
@@ -254,12 +256,12 @@ In our example we choose an exponential correlation, we run 2 chains parallelizi
 
 
 ```{r label="run1",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE}
- start1=list("alpha"      = c(2*pi,3.14),
+ start1 <- list("alpha"      = c(2*pi,3.14),
 	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
 	 "sigma2"    = c(1,0.1),
 	 "beta"     = c(.3,0.01),
 	 "k"       = rep(0, nrow(train)))
- mod = WrapSp(
+ mod <- WrapSp(
  x     = train$Dmr,
  coords    = coords.train,
  start   = start1 ,
@@ -275,16 +277,16 @@ In our example we choose an exponential correlation, we run 2 chains parallelizi
  accept_ratio = 0.5,
  adapt_param = c(start = 1000, end = 10000, esponente = 0.95),
  corr_fun = "exponential", 
- n_chains=2,
- parallel=T,
- n_cores=2)
+ n_chains = 2,
+ parallel = T,
+ n_cores = 2)
  save(mod, file = "mod.RData")
 ```
 
 We can control the convergence of the MCMC using the function \texttt{ConvCheck} that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
 
 ```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-check<- ConvCheck(mod)
+check <- ConvCheck(mod)
 check$Rhat
 ```
 and the traceplots always remebering that \texttt{alpha} is a circular variable
@@ -294,7 +296,7 @@ and the traceplots always remebering that \texttt{alpha} is a circular variable
 ```
 Convergence is clearly achieved we can now proceed to estimate the values on the test sites using the posterior samples we just obtained.
 ```{r label="krigstorm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE}
-Pred = WrapKrig(
+Pred <- WrapKrig(
    WrapSp_out = mod,
 ## The coordinates for the observed points
   coords_obs = coords.train,
@@ -303,6 +305,7 @@ Pred = WrapKrig(
 ##the observed circular values
    x_oss = train$Dmr
  )
+save(Pred, file = "Pred.RData")
 ```
 Once the estimates are obtained we compute the Average Prediction Error again following @Jona2013
 ```{r label="APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
@@ -318,11 +321,15 @@ To very how things changes when we have to deal with largere variability we run 
 
 ```{r label="calma1",message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE,eval=FALSE}
 calma<-apr6.2010[apr6.2010$state=="calm" & apr6.2010$hour=="20:00",]
+
 calma$Dmr<-calma$Dm*pi/180
+save(calma, file = "calma.RData")
 nval<-round(0.5*nrow(calma))
 sample.val<-sort(sample(c(1:nrow(calma)),nval))
 train<-calma[-sample.val,]
+save(train, file = "train.calma.RData")
 test<-calma[sample.val,]
+save(test, file = "test.calma.RData")
 coords<-calma[,3:4]
 colnames(coords)=c("X","Y")
 attr(coords,"projection")<-"LL"
@@ -338,12 +345,12 @@ rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 We proceed with a larger number of iterations given the larger variability of observations
 
 ```{r label="calmarun1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
-start1=list("alpha"      = c(2*pi,3.14),
+start1 <- list("alpha"      = c(2*pi,3.14),
             "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
             "sigma2"    = c(1,0.01),
             "beta"     = c(.3,0.01),
             "k"       = rep(0, nrow(train)))
-mod = WrapSp(
+mod <- WrapSp(
   x     = train$Dmr,
   coords    = coords.train,
   start   = start1 ,
@@ -354,26 +361,27 @@ mod = WrapSp(
   ) ,
   nugget = TRUE,
   sd_prop   = list( "sigma2" = 1, "rho" = 0.3, "beta" = 1),
-  iter    = 50000,
-  bigSim    = c(burnin = 25000, thin = 10),
-  accept_ratio = 0.5,
+  iter    = 70000,
+  bigSim    = c(burnin = 60000, thin = 10),
+  accept_ratio = 0.3,
   #adapt_param = c(start = 1000, end = 10000, esponente = 0.95),
   corr_fun = "exponential", 
   n_chains=2,
   parallel=T,
   n_cores=2)
+save(mod, file = "mod.calma.RData")
 ```
 We check for convergence
 ```{r label="calmacheck1", message=FALSE, echo=c(2,3,4,5), warning=FALSE, eval=TRUE}
 check <- ConvCheck(mod)
-check$Rhat
-#par(mfrow=c(2,2))
-coda::traceplot(check$mcmc)
+ check$Rhat
+ #par(mfrow=c(2,2))
+ coda::traceplot(check$mcmc)
 ```
 
 We clearly need to setup an update of the chains, we compute the posterior mean of the four moedl parameters and we use these values to start the two chains again. This time with a smaller number of interations and we use the adaptive algorithm (evita i crash ma devo giustificare meglio)
 ```{r label="calmarun2", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
-start2<-list("alpha"      = c(3.087,3.14),
+start2 <- list("alpha"      = c(3.087,3.14),
              "rho"     = c(0.011225,0.011225),
              "sigma2"    = c(1.5,1.5),
              "beta"     = c(0.005,0.005),
@@ -399,12 +407,12 @@ mod.up = WrapSp(
   n_chains=2,
   parallel=T,
   n_cores=2)
+save(mod.up, file = "mod.up.RData")
 ```
 
 Again we check the chains convergence:
 ```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
-load("calma.RData")
-check.up<- ConvCheck(mod.up)
+check.up <- ConvCheck(mod.up)
 check.up$Rhat
 #par(mfrow=c(2,2))
 coda::traceplot(check.up$mcmc)
@@ -422,6 +430,7 @@ Pred.calm = WrapKrig(
 ##the observed circular values
    x_oss = train$Dmr
  )
+save(Pred.calm, file = "Pred.calm.RData")
 ```
 
 Once the estimates are obtained we compute the Average Prediction Error again and we can build a map of the APE in each estimated point
@@ -441,7 +450,7 @@ ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test
                           data = test)) +
   geom_raster(alpha = .5, vjust = - 1, hjust = 1) + 
   geom_contour() +
-  geom_spoke(radius = scales::rescale(test$APE, c(.01, .2)), angle = test$Dmr, arrow = arrow(length = unit(.05, 'cm')),alpha=0.3 ) +
+  geom_spoke(radius = scales::rescale(test$APE, c(.01, .2)), angle = test$Dmr, arrow = arrow(length = unit(.05, 'cm')),alpha = 0.3) +
   scale_fill_distiller(palette = "RdYlGn") + labs(fill = "APE \n", title = "April 6, 2010 ", subtitle = "calm-test, APE") +
   coord_equal(expand = 0) +
   theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))

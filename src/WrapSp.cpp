@@ -233,7 +233,7 @@ List WrapSpRcpp(
       app_Mat_ad_sp = arma::chol(app_Mat_ad_sp)*pow(lambda_adapt_sp,0.5);
 
       sim_sp[0] = log(sigma2 );
-      sim_sp[1] = log(rho );
+      sim_sp[1]  = log((rho - prior_rho[0])/(prior_rho[1] - rho));
 
       for(i=0;i<2;i++)
       {
@@ -244,15 +244,9 @@ List WrapSpRcpp(
       sim_sp_p = One*sim_sp + sim_sp_p;
       sigma2_p = exp(sim_sp_p[0]);
       //sigma2_p[0] = sigma2[0];
-      rho_p  = sim_sp[1] = log((rho - prior_rho[0])/(prior_rho[1] - rho));
-      // NumericVector rho_p_export(2);
-      // rho_p_export[0]=rho_p;
-      // rho_p_export[1]=++nnn;
-      // std::ofstream file;
-      // file.open("rho_p.csv",std::fstream::app);
-      // file << rho_p<<","<<++nnn<<"\n";
-      // file.close();
-      //rho_p[0] = rho[0];
+      rho_p =  (exp(sim_sp_p[1]) * prior_rho[1] + prior_rho[0]) / (1.0 + exp(sim_sp_p[1]));
+
+
       if(corr_fun == "exponential"){
         for(i=0;i<n_j;i++)
         {

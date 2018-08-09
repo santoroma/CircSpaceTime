@@ -7,7 +7,7 @@ Currently the following models are implemented:
 Spatial Wrapped Normal   
 Spatial Projected Normal   
 
-Yet to come:
+Yet to come:      
 Spatio-Temporal Wrapped Normal   
 Spatio-Temporal Projected Normal   
 

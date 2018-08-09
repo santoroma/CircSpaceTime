@@ -7,6 +7,10 @@ Currently the following models are implemented:
 Spatial Wrapped Normal   
 Spatial Projected Normal   
 
+Yet to come:
+Spatio-Temporal Wrapped Normal   
+Spatio-Temporal Projected Normal   
+
 We are going to update constantly the library with Bayesian and classical models dealing with complex dependence structures for circular, cylindrical and spherical variable.
 
 

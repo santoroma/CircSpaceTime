@@ -73,7 +73,7 @@
 #'
 #' APE <- APEcirc( real = test$Dmr, sim = Pred$Prev_out, bycol=F)
 #' APE$Ape #very small as during storms variability is very small
-
+#' @export
 APEcirc <- function(real, sim, bycol = F)
   {
 	if (bycol) {sim <- t(sim)}

@@ -5,11 +5,14 @@ Version: 0.1.0
 Authors@R: c(person("Giovanna", "Jona Lasinio", email = "giovanna.jonalasinio@uniroma1.it", role = c("aut")),
           person("Gianluca", "Mastrantonio", email = "gianluca.mastrantonio@polito.it", role = c("aut")),
           person("Mario", "Santoro", email = "santoro.ma@gmail.com", role = c("aut", "cre")))
-BugReports: https://github.com/santoroma/circspacetime
+BugReports: https://github.com/santoroma/CircSpaceTime
 Description: This package implements spatial, spatio-temporal and temporal models for circular data. 
 Currently the following models are implemented:
     Spatial Wrapped Normal
-    We are going to update constantly the library with Bayesian and classical models dealing with complex dependence structures for circular, cylindrical and spherical variable.
+    Spatial Projected Normal
+    Yet to come:
+    Spatio-Temporal Wrapped Normal
+    Spatio-Temporal Projected Normal
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -19,5 +22,3 @@ LinkingTo: Rcpp, RcppArmadillo, RInside
 Imports: Rcpp (>= 0.12.14), circular, RInside
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>

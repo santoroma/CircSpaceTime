@@ -17,6 +17,7 @@
 #' rose_diag(x,bins=15,color="green")
 #' rose_diag(x1,bins=15,color="blue",alpha=.5,add=T)
 #' rose_diag(x2,bins=15,color="red",alpha=.5,add=T)
+#' @export
 rose_diag <- function(x, bins=15, color= "red", alpha = 1, start = 0, add = FALSE, template = "rad", direction = NULL) {
   # inspired from https://stackoverflow.com/questions/15125628/putting-mathematical-symbols-and-subscripts-mixed-with-regular-letters-in-r-ggpl
   if ( is.null(direction) & template == "wind_rose") direction = 1

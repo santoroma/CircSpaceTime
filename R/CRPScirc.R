@@ -78,7 +78,7 @@
 #'
 #' CRPS=CRPScirc(real = test$Dmr, sim = Pred$Prev_out, bycol=F)
 #' CRPS$CRPS ## very small as during storms variability is  small and estimation results are very precise
-
+#' @export
 CRPScirc = function(real,sim,bycol=F){
 	if(bycol==T){
 		sim = t(sim)}

@@ -65,7 +65,14 @@
 #'  An R image containing all the parameters and the results.
 #'  See the vignette CircSpaceTime
 #'
-"storm"
+#' @format All the calculated values and simulations needed in order
+#' to reproduce the storm estimations in the vignette
+#'
+#'\describe{
+#'  the R image is in ./data/mod0.RData}
+#'
+"mod0"
+
 
 #' Calm Vignette
 #'
@@ -76,9 +83,12 @@
 #'  An R image containing all the parameters and the results.
 #'  See the vignette CircSpaceTime
 #'
-"calm"
-
-
-
+#' @format All the calculated values and simulations needed in order
+#' to reproduce the calm estimations in the vignette
+#'
+#'#'\describe{
+#'  the R image is in ./data/mod.RData}
+#'
+"mod"
 
 

@@ -70,7 +70,7 @@
 #' #or/and
 #' require(coda)
 #' plot(check$mcmc) # remember that alpha is a circular variable
-
+#' @export
 ConvCheck <- function(mod, startit = 15000, thin = 10){
 n <- length(mod)
 #nit <- length(mod[[1]]$alpha)

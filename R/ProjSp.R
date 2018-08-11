@@ -40,7 +40,7 @@
 #' plot(storm1$Lon,storm1$Lat, col=storm1$state,pch=20)
 #' legend("bottomleft",c("calm","transition","storm"),pch=20,col=c(1,2,3),title="Sea state")
 #' #we select only the storm area
-# storm2<-apr6.2010[apr6.2010$hour=="20:00" & apr6.2010$state=="storm",]
+#' storm2<-apr6.2010[apr6.2010$hour=="20:00" & apr6.2010$state=="storm",]
 #' ### we have to convert the directions into radians
 #' storm2$Dmr<-storm2$Dm*pi/180
 #' ##The storms comes from south-east
@@ -69,7 +69,7 @@
 #' "r"= abs(rnorm(length(train0$Dmr))))
 #'    # Running ProjSp may take some time
 #'    mod <- ProjSp(
-#'    theta     = train0$Dmr,
+#'    x     = train0$Dmr,
 #'    coords    = coords0.train,
 #'    start   = start0 ,
 #'    prior   = list("alpha_mu"      = c(0,0),
@@ -96,7 +96,7 @@
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' #### a more complex situation, when calm and transition states are mixed
 #' data(may6.2010.00)
-
+#' @export
 
 ProjSp  <- function(
   x     = x,

@@ -77,7 +77,7 @@
 #' #   #the observed circular values
 #' x_oss = train$Dmr
 #' )
-
+#' @export
 WrapKrig <- function(
   WrapSp_out,
   coords_obs,

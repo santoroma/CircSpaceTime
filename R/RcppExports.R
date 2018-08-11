@@ -2,26 +2,26 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 ProjKrigCpp <- function(sigma2, rho, rho0, alpha, r, n, nsample, H_tot, nprev, theta, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_ProjKrigCpp`, sigma2, rho, rho0, alpha, r, n, nsample, H_tot, nprev, theta, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_ProjKrigCpp', PACKAGE = 'CircSpaceTime', sigma2, rho, rho0, alpha, r, n, nsample, H_tot, nprev, theta, corr_fun, kappa_matern)
 }
 
 ProjSpRcpp <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, iter_z, prior_rho0, prior_sigma2, prior_rho, prior_alpha_sigma, prior_alpha_mu, sdrho0, sdsigma2, sdrho, sdr, rho0, sigma2, rho, alpha, r, theta, H, acceptratio, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_ProjSpRcpp`, ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, iter_z, prior_rho0, prior_sigma2, prior_rho, prior_alpha_sigma, prior_alpha_mu, sdrho0, sdsigma2, sdrho, sdr, rho0, sigma2, rho, alpha, r, theta, H, acceptratio, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_ProjSpRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, iter_z, prior_rho0, prior_sigma2, prior_rho, prior_alpha_sigma, prior_alpha_mu, sdrho0, sdsigma2, sdrho, sdr, rho0, sigma2, rho, alpha, r, theta, H, acceptratio, corr_fun, kappa_matern)
 }
 
 WrapKrigCpp_nugget <- function(sigma2, alpha, rho, beta, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_WrapKrigCpp_nugget`, sigma2, alpha, rho, beta, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_WrapKrigCpp_nugget', PACKAGE = 'CircSpaceTime', sigma2, alpha, rho, beta, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern)
 }
 
 WrapKrigCpp <- function(sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_WrapKrigCpp`, sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_WrapKrigCpp', PACKAGE = 'CircSpaceTime', sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern)
 }
 
 WrapSpRcpp_nugget <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, prior_beta, sdrho, sdsigma2, sdbeta, alpha, rho, sigma2, beta, k, x, H, acceptratio, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_WrapSpRcpp_nugget`, ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, prior_beta, sdrho, sdsigma2, sdbeta, alpha, rho, sigma2, beta, k, x, H, acceptratio, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_WrapSpRcpp_nugget', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, prior_beta, sdrho, sdsigma2, sdbeta, alpha, rho, sigma2, beta, k, x, H, acceptratio, corr_fun, kappa_matern)
 }
 
 WrapSpRcpp <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, sdrho, sdsigma2, alpha, rho, sigma2, k, x, H, acceptratio, corr_fun, kappa_matern) {
-    .Call(`_CircSpaceTime_WrapSpRcpp`, ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, sdrho, sdsigma2, alpha, rho, sigma2, k, x, H, acceptratio, corr_fun, kappa_matern)
+    .Call('_CircSpaceTime_WrapSpRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, sdrho, sdsigma2, alpha, rho, sigma2, k, x, H, acceptratio, corr_fun, kappa_matern)
 }
 

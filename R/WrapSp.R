@@ -97,7 +97,7 @@
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' #### a more complex situation, when calm and transition states are mixed
 #' data(may6.2010.00)
-
+#' @export
 
 WrapSp  <- function(
   x     = x,

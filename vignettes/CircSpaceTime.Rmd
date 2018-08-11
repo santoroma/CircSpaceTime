@@ -17,11 +17,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Abstarct   
+# Abstract   
 CircSpaceTime is going to be a new R package that eventually will implement most of the models  recently developed for spatial and spatio-temporal interpolation of circular data. Such data are often found in applications where, among the many, wind directions, animal movement directions, and wave directions are involved.  To analyze such data we need models for observations at locations $\mathbf{s}$ and times $t$, so-called geostatistical models providing structured dependence which is assumed to decay in distance and time.  For example for wave directions in a body of water, we conceptualize a conceptual wave direction at every location and every time.  Thus, the challenge is to introduce structured dependence into angular data. The approach we take begins with models for linear variables over space and time using Gaussian processes.  Then, we use either wrapping or projection to obtain Gaussian processes for circular data.  Altogether, this package will implement first, work developed by Mastrantonio, Jona Lasinio, Gelfand. The models are cast as hierarchical models, with fitting and inference within a Bayesian inference framework. All procedures are written using Rcpp and whenever possible, the computation is parallelized. We use a wave direction dataset as a running example.
 
 # Introduction
-CircSpaceTime is an, under construction, R package implementing spatial and spatio-temporal models for circular data. As a first step we start with a purely spatial setting, as initially introduced in @Jona2013.
+CircSpaceTime is an, under development, R package implementing spatial and spatio-temporal models for circular data. As a first step we start with a purely spatial setting, as initially introduced in @Jona2013.
 
 There are different approaches to specify valid  circular distributions, see for example @Jammalamadaka2001. Here we focus on two methods that allow to built a circular distribution starting from  a linear one, namely the wrapping, and the projection.   Under both methods, the resulting distribution has a  complex functional form but introducing a suitable latent variable, the joint distribution of observed and latent variables are easy to handle in a fully Bayesian framework.
 
@@ -104,6 +104,7 @@ and  ${\varepsilon}(\mathbf{s})$ is the nugget effect. For the wrapped approach 
 
 
 Let $R(\mathbf{s}) = || \mathbf{Y}(\mathbf{s}) || \in \mathbb{R}^+$ be a (latent) process and $\mathbf{r}=(r(\mathbf{s}_1),\dots , r(\mathbf{s}_n))^{\prime}$ be its $n-$dimensional realization. Then,  instead of $\boldsymbol{\theta}$, we can work with  the joint density of $\boldsymbol{\theta}, \mathbf{r}|\boldsymbol{\psi}$, that is the integrand in \eqref{eq:dproj1}.
+
 ## Implementation details
 Model parameters are estimated using a MCMC algorithm 
 involving  Gibbs sampler and sometimes Metropolis within Gibbs steps. 
@@ -160,7 +161,7 @@ map1
 
 
 We convert the directions into radians
-```{r label0"stirm1$Dmr$, message=FALSE, echo=TRUE, warning=FALSE , eval = TRUE}
+```{r label0"stirm1$Dmr$, message=FALSE, echo=TRUE, warning=FALSE , eval = FALSE}
  storm1$Dmr<-storm1$Dm*pi/180
 ```
 
@@ -186,7 +187,7 @@ grid.arrange(r1, r2, r3, ncol = 3)
 
 It is very clear that the variability decreases from \emph{calm} to \emph{storm}, this is very relevant in terms of model choices. (to be completed....)
 First we select the  area where the storm is still in full force
-```{r label="storm2", message=FALSE, echo=TRUE, warning=FALSE, eval = TRUE}
+```{r label="storm2", message=FALSE, echo=TRUE, warning=FALSE, eval = FALSE}
   storm2 <- storm1[(storm1$state == "storm"),]
 ```
 further it is better  to convert the coordinates into UTM as the estimation algorithm uses euclidean distance.  We also hold out $10\%$ of the locations for validation purposes
@@ -262,7 +263,7 @@ We now compute the empirical practical range interval and we are going to use it
  rho_max0 <- 3./min(distance_matrix0[which(distance_matrix0 > 0)])
  rho_min0 <- 3./max(distance_matrix0[which(distance_matrix0 > 0)])
 ```
-The function \texttt{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution as proposed in @Jona2013.As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
+The function \texttt{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution as proposed in @Jona2013 .As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
 \texttt{alpha, rho, beta, sigma2} vectors with the thinned chains of the simulated model parameters, $k$ a matrix with as many rows as the data and colums the length of thinned chains and \texttt{corr\_fun} a string with the type of spatial correlation chosen.
 In our example we choose an exponential correlation and we run 2 chains parallelizing the procedure.
 
@@ -272,7 +273,7 @@ In our example we choose an exponential correlation and we run 2 chains parallel
 	 "sigma2"    = c(1,0.1),
 	 "beta"     = c(.3,0.01),
 	 "k"       = rep(0, nrow(train0)))
- mod0 <- WrapSp(
+ storm <- WrapSp(
  x     = train0$Dmr,
  coords    = coords0.train,
  start   = start0 ,
@@ -296,9 +297,13 @@ In our example we choose an exponential correlation and we run 2 chains parallel
 
 We can control the convergence of the MCMC using the function \texttt{ConvCheck} that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
 
-```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-check <- ConvCheck(mod0)
-check$Rhat
+```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
+check.storm <- ConvCheck(storm)
+check.storm$Rhat
+```
+
+```{r label="print_check1", message=FALSE, echo=FALSE, warning=FALSE, cache=FALSE, }
+check.storm$Rhat
 ```
 and the traceplots always remebering that \texttt{alpha} is a circular variable
 ```{r label="trace1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
@@ -311,8 +316,8 @@ plot(check$mcmc, trace = TRUE, density = FALSE)
 
 Convergence is clearly achieved we can now proceed to estimate the values on the test sites using the posterior samples we just obtained.
 ```{r label="krigstorm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE}
-Pred0 <- WrapKrig(
-   WrapSp_out = mod0,
+Pred.storm <- WrapKrig(
+   WrapSp_out = storm,
 ## The coordinates for the observed points
   coords_obs = coords0.train,
 ## The coordinates of the validation points
@@ -323,14 +328,17 @@ Pred0 <- WrapKrig(
 ```
 
 Once the estimates are obtained we compute the Average Prediction Error again following @Jona2013
-```{r label="APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-APE <- APEcirc( real = test0$Dmr,
-                sim = Pred0$Prev_out,
+```{r label="APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
+APE_storm <- APEcirc( real = test0$Dmr,
+                sim = Pred.storm$Prev_out,
                 bycol = F
 )
-APE
+APE_storm
 ```
 
+```{r label="APEstorm_print", message=FALSE, echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
+APE_storm
+```
 
 ## Estimation of Wrapped models with large variability
 To very how things changes when we have to deal with largere variability we run the same approach on data from the "calm" area. This time as the area includes 708 points, we are going to use 50$\%$ of them for estimation and the remaining for validation.
@@ -369,7 +377,7 @@ start1 <- list("alpha"      = c(2*pi,3.14),
             "sigma2"    = c(1,0.01),
             "beta"     = c(.3,0.01),
             "k"       = rep(0, nrow(train)))
-mod <- WrapSp(
+calm <- WrapSp(
   x     = train$Dmr,
   coords    = coords.train,
   start   = start1 ,
@@ -388,12 +396,16 @@ mod <- WrapSp(
   n_chains=2,
   parallel=T,
   n_cores=2)
-save(mod, file = "mod.calma.RData")
 ```
 We check for convergence
-```{r label="calmacheck1", message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
-check <- ConvCheck(mod)
- check$Rhat
+```{r label="calmacheck1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+check.calm <- ConvCheck(mod)
+ check.calm$Rhat
+```
+
+```{r label="print.calmacheck1", message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+check.calm <- ConvCheck(mod)
+ check.calm$Rhat
 ```
 
 ```{r label="calmatrace1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
@@ -410,7 +422,7 @@ start2 <- list("alpha"      = c(3.087,3.14),
              "k"       = rep(0, nrow(train)))
 
 
-mod.up = WrapSp(
+calm.up = WrapSp(
   x     = train$Dmr,
   coords    = coords.train,
   start   = start2 ,
@@ -429,12 +441,15 @@ mod.up = WrapSp(
   n_chains=2,
   parallel=T,
   n_cores=2)
-save(mod.up, file = "mod.up.RData")
 ```
 
 Again we check the chains convergence:
-```{r message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
-check.up <- ConvCheck(mod.up)
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+check.up <- ConvCheck(calma.up)
+check.up$Rhat
+```
+
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
 check.up$Rhat
 ```
 
@@ -449,7 +464,7 @@ The convergence is reached and we can now move to the estimation on the test set
 
 ```{r label="kigcalma", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE}
 Pred.calm = WrapKrig(
-   WrapSp_out = mod.up,
+   WrapSp_out = calm.up,
 ## The coordinates for the observed points
   coords_obs = coords.train,
 ## The coordinates of the validation points
@@ -461,14 +476,23 @@ Pred.calm = WrapKrig(
 
 Once the estimates are obtained we compute the Average Prediction Error again and we can build a map of the APE in each estimated point
 
-```{r label="plot3",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=FALSE}
+```{r label="ape_calm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE,eval=FALSE}
 
-APE <- APEcirc(
+APE.calm <- APEcirc(
   real = test$Dmr,
   sim = Pred.calm$Prev_out,
   bycol=F
 )
-test$APE <- APE$ApePoints
+APE.calm
+```
+
+```{r label="print_ape_calm",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=TRUE}
+APE.calm
+```
+
+
+```{r label="plot3",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=FALSE}
+test$APE <- APE.calm$ApePoints
 require(ggmap)
 ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test$Lat)), zoom = 7),
       base_layer = ggplot(aes(x = Lon, y = Lat, z = APE,
@@ -489,14 +513,14 @@ ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test
 
 
 
-```{r}
+```{r eval=FALSE}
 start0 <- list("alpha"      = c(0,0),
                "rho0"     = c(.5*(rho_min0 + rho_max0)),
                "rho" = c(.05),
                "sigma2"    = c(0.1),
                "r"= abs(rnorm(length(train0$Dmr))))
 mod0 <- ProjSp(
-  theta     = train0$Dmr,
+  x     = train0$Dmr,
   coords    = coords0.train,
   start   = start0 ,
   prior   = list("alpha_mu"      = c(0,0),
@@ -518,7 +542,7 @@ prev.krig <- ProjKrig(mod0[[1]], coords_obs = coords0.train,
                       ## The coordinates of the validation points
                       coords_nobs = coords0.test,
                       ##the observed circular values
-                      theta_oss = train0$Dmr)
+                      x_oss = train0$Dmr)
 
 ```
 

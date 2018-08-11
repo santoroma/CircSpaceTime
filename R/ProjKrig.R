@@ -1,12 +1,12 @@
 #' Kriging using Proj normal model.
 #'
 #' \code{ProjKrig} function computes the Kriging prediction for circular spatial data
-#' as proposed in G Jona-Lasinio, A Gelfand, M Jona-Lasinio Spatial analysis of wave direction data using wrapped gaussian processes - The Annals of Applied Statistics, 2012,V. 6, 4,  pp1478-1498
+#' as explanied in  G.Mastrantonio, G.JonaLasinio, A.E.Gelfand, Spatio-temporal circular models with non-separable covariance structure,TEST25(2016)331–350.
 #'
 #' @param ProjSp_out the functions takes the output of \code{ProjSp} function
 #' @param coords_obs coordinates of observed locations (in UTM)
 #' @param coords_nobs coordinates of unobserved locations (in UTM)
-#' @param theta_oss observed values
+#' @param x_oss observed values
 #' @return a list of 3 elements
 #' \describe{
 #'	\item{M_out} {the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
@@ -20,7 +20,7 @@
 #' plot(storm1$Lon,storm1$Lat, col=storm1$state,pch=20)
 #' legend("bottomleft",c("calm","transition","storm"),pch=20,col=c(1,2,3),title="Sea state")
 #' #we select only the storm area
-# storm2<-apr6.2010[apr6.2010$hour=="20:00" & apr6.2010$state=="storm",]
+#' storm2<-apr6.2010[apr6.2010$hour=="20:00" & apr6.2010$state=="storm",]
 #' ### we have to convert the directions into radians
 #' storm2$Dmr<-storm2$Dm*pi/180
 #' ##The storms comes from south-east
@@ -41,35 +41,36 @@
 #' ### Now we build the information for the priors
 #' rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 #' rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
-#' Now run the posterior estimation see \code{\link{WrapSp}} for details
-#' start1=list("alpha"      = c(2*pi,3.14),
-#'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
-#'	 "sigma2"    = c(1,0.1),
-#'	 "beta"     = c(.3,0.01),
-#'	 "k"       = rep(0, nrow(train)))
-#'    # Running WrapSp may take some time
-#' mod = WrapSp(
-#' x     = train$Dmr,
-#' coords    = coords.train,
-#' start   = start1 ,
-#' prior   = list("alpha"      = c(pi,10), # N
-#' "rho"     = c(rho_min, rho_max), #c(1.3,100), # G
-#' "sigma2"    = c(3,0.5),
-#' "beta"      = c(1,1,2)  # nugget prior
-#' ) ,
-#' nugget = TRUE,
-#' sd_prop   = list( "sigma2" = 1, "rho" = 0.3, "beta" = 1),
-#' iter    = 30000,
-#'  bigSim    = c(burnin = 15000, thin = 10),
-#' accept_ratio = 0.5,
-#' adapt_param = c(start = 1000, end = 10000, esponente = 0.95),
-#' corr_fun = "exponential",
-#' n_chains=2,
-#' parallel=T,
-#' n_cores=2)
+#' Now run the posterior estimation see \code{\link{ProjSp}} for details
+#' Now run the posterior estimation see \code{\link{ProjSp}} for details
+#' start0 <- list("alpha"      = c(0,0),
+#' "rho0"     = c(.5*(rho_min0 + rho_max0)),
+#' "rho" = c(.05),
+#' "sigma2"    = c(0.1),
+#' "r"= abs(rnorm(length(train0$Dmr))))
+#'    # Running ProjSp may take some time
+#'    mod <- ProjSp(
+#'    x     = train0$Dmr,
+#'    coords    = coords0.train,
+#'    start   = start0 ,
+#'    prior   = list("alpha_mu"      = c(0,0),
+#'    "alpha_sigma"   = diag(10,2),
+#'    "rho0"     = c(rho_min0, rho_max0),
+#'    "rho"      = c(-1,1),
+#'    "sigma2"    = c(3,0.5)),
+#'    sd_prop   = list( "sigma2" = .1, "rho0" = 0.1, "rho" = .1,  "sdr" = sample(.05,length(train0$Dmr), replace = T)),
+#'    iter    = 4000,
+#'    bigSim    = c(burnin = 3000, thin = 1),
+#'    accept_ratio = 0.5,
+#'    adapt_param = c(start = 1000, end = 10000, esponente = 0.95, sdr_update_iter = 50),
+#'    corr_fun = "exponential",
+#'    n_chains = 1,
+#'    parallel = T,
+#'    n_cores = 2)
+#'    ####Prediction
 #' Pred = WrapKrig(
-#' #   # Use the output of WrapSp
-#' WrapSp_out = mod,
+#' #   # Use the output of ProjSp
+#' ProjSp_out = mod,
 #' #   # The coordinates for the observed points
 #' coords_obs = coords.train,
 #' #   # the coords of the validation points
@@ -77,12 +78,12 @@
 #' #   #the observed circular values
 #' x_oss = train$Dmr
 #' )
-
+#' @export
 ProjKrig <- function(
   ProjSp_out,
   coords_obs,
   coords_nobs,
-  theta_oss
+  x_oss
 )
 {
 #  MeanCirc <- circular::mean.circular(x_oss)
@@ -113,7 +114,7 @@ ProjKrig <- function(
   nsample	<- ncol(r)
 
   H_tot	<- as.matrix(stats::dist(rbind(coords_obs,coords_nobs)))
-  out <- ProjKrigCpp(sigma2,rho, rho0, alpha, r, n, nsample,	H_tot,nprev, theta_oss, corr_fun, kappa_matern)
+  out <- ProjKrigCpp(sigma2,rho, rho0, alpha, r, n, nsample,	H_tot,nprev, x_oss, corr_fun, kappa_matern)
 #  out$Prev_out <- (out$Prev_out - pi + MeanCirc) %% (2*pi)
   return(out)
   }

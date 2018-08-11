@@ -1,22 +1,23 @@
 #' ProjSp.
 #'
-#'  \code{ProjSp} produces samples from the Wrapped Normal spatial model  posterior distribution
-#' as proposed in 		Giovanna Jona LasinioAlan GelfandMattia Jona-Lasinio Spatial analysis of wave direction data using wrapped Gaussian processes 		The Annals of Applied Statistics 6(4) (2013)  		DOI10.1214/12-AOAS576
+#'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
+#' as explanied in  G.Mastrantonio, G.JonaLasinio, A.E.Gelfand, Spatio-temporal circular models with non-separable covariance structure,TEST25(2016)331–350.
 #' @param  x a vector of n circular data in \eqn{[0,2\pi)}
 #' @param  coords an nx2 matrix with the sites coordinates
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
-#' \item 	alpha the mean,
-#' \item  rho the spatial decay parameter,
+#' \item 	alpha the 2-d vector of the means of the Gaussian bi-variate distribution,
+#' \item  rho0 the spatial decay parameter,
+#' \item  rho the correlation of the two components of the linear representation
 #' \item sigma2 the process variance,
-#' \item k the vector of \code{length(x)}  winding numbers
+#' \item r the vector of \code{length(x)},  latent variable
 #' }
 #' @param  prior a list of 4 elements to define priors  for the model parameters:
 #' \describe{
-#' \item{alpha} {a vector of 2 elements the mean and the variance of  a Gaussian distribution, default is  mean \eqn{\pi} and variance 1,}
+#' \item{alpha_mu} {a vector of 2 elements, the means of  the bivariate Gaussian distribution,}
+#' \item{alpha_sigma} {a 2x2 matrix, the covariance matrix of the bivariate Gaussian distribution,}
 #' \item{rho}  {a vector of 2 elements defining the shape and rate of a gamma distribution,}
 #' \item{ sigma2}  {a vector of 2 elements defining the shape and rate of an inverse-gamma distribution,}
-#' \item{beta} {a vector of 3 elements (c,a,b). For the nugget (if present) we use the parametrization \eqn{\beta=nugget/\sigma^2} and then a scaled Beta distribution is chosen as prior i.e. c*Beta(a,b), with a,b,c>0.}
 #' }
 #' @param sd.prop= list of 3 elements. To run the MCMC for the rho and sigma2 parameters we use an adaptive metropolis and in sd.prop we build a list of initial guesses for these two parameters and the beta parameter
 #' @param nugget  logical, if the measurement error term must be added, default to TRUE
@@ -25,12 +26,11 @@
 #' @param accept.ratio it is the desired acceptance ratio in the adaptive metropolis
 #' @param adapt.param a vector of 3 elements giving the iteration number at which the adaptation must start  and end. The third element (esponente)  must be a number in (0,1) is a parameter ruling the speed of changes in the adaptation algorithm, it is recommended to set it close to 1, if it is too small  non positive definite matrices may be generated and the program crashes.
 #' @param corr_fun  characters, the name of the correlation function, currently implemented functions are c("exponential", "matern")
-#' @param kappa_matern numeric, the smoothness parameter of the Matern correlation function, k=0.5 is the exponential function
 #' @param n_chain numeric the number of chains to be lunched (we recommend to use at least 2 for model diagnostic)
 #' @param parallel logical, if the multiplechains  must be lunched in parallel
 #' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
 #'@return it returns a list of \code{n_chains} lists each with elements
-#' \code{alpha}, \code{rho}, \code{beta}, \code{sigma2} vectors with the thinned chains, \code{k} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
+#' \code{rho0},\code{rho0}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
 #' @examples
 #' data(april)
 #' attach(april)
@@ -61,32 +61,31 @@
 #' ### Now we build the information for the priors
 #' rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 #' rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
-#' Now run the posterior estimation see \code{\link{WrapSp}} for details
-#' start1=list("alpha"      = c(2*pi,3.14),
-#'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
-#'	 "sigma2"    = c(1,0.1),
-#'	 "beta"     = c(.3,0.01),
-#'	 "k"       = rep(0, nrow(train)))
-#'    # Running WrapSp may take some time
-#' mod = WrapSp(
-#' x     = train$Dmr,
-#' coords    = coords.train,
-#' start   = start1 ,
-#' prior   = list("alpha"      = c(pi,10), # N
-#' "rho"     = c(rho_min, rho_max), #c(1.3,100), # G
-#' "sigma2"    = c(3,0.5),
-#' "beta"      = c(1,1,2)  # nugget prior
-#' ) ,
-#' nugget = TRUE,
-#' sd_prop   = list( "sigma2" = 1, "rho" = 0.3, "beta" = 1),
-#' iter    = 30000,
-#'  bigSim    = c(burnin = 15000, thin = 10),
-#' accept_ratio = 0.5,
-#' adapt_param = c(start = 1000, end = 10000, esponente = 0.95),
-#' corr_fun = "exponential",
-#' n_chains=2,
-#' parallel=T,
-#' n_cores=2)
+#' Now run the posterior estimation see \code{\link{ProjSp}} for details
+#' start0 <- list("alpha"      = c(0,0),
+#' "rho0"     = c(.5*(rho_min0 + rho_max0)),
+#' "rho" = c(.05),
+#' "sigma2"    = c(0.1),
+#' "r"= abs(rnorm(length(train0$Dmr))))
+#'    # Running ProjSp may take some time
+#'    mod <- ProjSp(
+#'    theta     = train0$Dmr,
+#'    coords    = coords0.train,
+#'    start   = start0 ,
+#'    prior   = list("alpha_mu"      = c(0,0),
+#'    "alpha_sigma"   = diag(10,2),
+#'    "rho0"     = c(rho_min0, rho_max0),
+#'    "rho"      = c(-1,1),
+#'    "sigma2"    = c(3,0.5)),
+#'    sd_prop   = list( "sigma2" = .1, "rho0" = 0.1, "rho" = .1,  "sdr" = sample(.05,length(train0$Dmr), replace = T)),
+#'    iter    = 4000,
+#'    bigSim    = c(burnin = 3000, thin = 1),
+#'    accept_ratio = 0.5,
+#'    adapt_param = c(start = 1000, end = 10000, esponente = 0.95, sdr_update_iter = 50),
+#'    corr_fun = "exponential",
+#'    n_chains = 1,
+#'    parallel = T,
+#'    n_cores = 2)
 #' ## we check convergence
 #' check<- ConvCheck(mod)
 #' check$Rhat ### convergence has been reached
@@ -100,20 +99,20 @@
 
 
 ProjSp  <- function(
-  theta     = theta,
+  x     = x,
   coords    = coords,
   start   = list("alpha"      = c(1,1,.5,.5),
                  "rho0"     = c(0.1, .5),
                  "rho"      = c(.1,.5),
                  "sigma2"    = c(0.1, .5),
-                 "r"       = sample(1,length(theta), replace = T)),
+                 "r"       = sample(1,length(x), replace = T)),
   prior   = list("rho0"      = c(8,14),
                  "rho"     = c(8,14),
                  "sigma2"    = c(),
                  "alpha_mu" = c(1., 1.),
                  "alpha_sigma" = c()
   ) ,
-  sd_prop   = list( "sigma2" = 0.5, "rho0" = 0.5, "rho" = 0.5,"beta" = .5, "sdr" = sample(.05,length(theta), replace = T)),
+  sd_prop   = list( "sigma2" = 0.5, "rho0" = 0.5, "rho" = 0.5, "sdr" = sample(.05,length(x), replace = T)),
   iter    = 1000,
   bigSim    = c(burnin = 20, thin = 10),
   accept_ratio = 0.234,
@@ -130,7 +129,7 @@ ProjSp  <- function(
   #######
   burnin					=	bigSim[1]
   thin					= 	bigSim[2]
-  n_j						=	length(theta)
+  n_j						=	length(x)
   H						=	as.matrix(stats::dist(coords))
 
   ######
@@ -191,7 +190,7 @@ ProjSp  <- function(
                                      prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
                                      sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
                                      start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
-                                     theta,H, acceptratio,
+                                     x,H, acceptratio,
                                      corr_fun, kappa_matern)
         out_temp
       }
@@ -205,7 +204,7 @@ ProjSp  <- function(
                             prior_rho0 ,prior_sigma2,prior_rho, prior_alpha_sigma, prior_alpha_mu,
                             sdprop_rho0,sdprop_sigma2,sdprop_rho, sdprop_r,
                             start_rho0[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
-                            theta,H, acceptratio,
+                            x,H, acceptratio,
                             corr_fun, kappa_matern)
 
         out[[i]] <- out_temp

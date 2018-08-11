@@ -1,4 +1,4 @@
-#' WrapSp.
+#' Samples from the Wrapped Normal spatial model
 #'
 #'  \code{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution
 #' as proposed in 		Giovanna Jona LasinioAlan GelfandMattia Jona-Lasinio Spatial analysis of wave direction data using wrapped Gaussian processes 		The Annals of Applied Statistics 6(4) (2013)  		DOI10.1214/12-AOAS576

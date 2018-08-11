@@ -133,17 +133,17 @@ We now load a list containing 4 data frames each of 35856 rows and 7 columns
 \end{itemize}
 We now isolate a storm event observed at 8pm of April 6, 2010.
 
-```{r label="load", message=FALSE, echo=TRUE, warning=FALSE}
+```{r label="load", message=FALSE, echo=TRUE, warning=FALSE, eval = TRUE}
 require(CircSpaceTime) 
 data(april)
-attach(april)
-storm1 <- apr6.2010[apr6.2010$hour == "20:00",]
+storm1 <- april$apr6.2010[april$apr6.2010$hour == "20:00",]
 ``` 
  
+
  
-```{r label="plot1", message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE}
+```{r label="plot1", message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE, eval = FALSE}
 require(ggmap)
-ggmap(maplayer <-get_map(location = c(min(storm1$Lon), min(storm1$Lat), max(storm1$Lon), max(storm1$Lat)), zoom = 6),
+map1 <- ggmap(get_map(location = c(min(storm1$Lon), min(storm1$Lat), max(storm1$Lon), max(storm1$Lat)), zoom = 6),
       base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
                               fill = Hm0),
                           data = storm1)) +
@@ -153,16 +153,20 @@ geom_contour() +
   scale_fill_distiller(palette = "RdYlGn") + labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", subtitle = "20:00") +
   coord_equal(expand = 0) +
   theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))
-save(maplayer,file = "maplayer.RData")
+map1
 ```
+
+![](map1.png)
+
+
 We convert the directions into radians
-```{r label0"stirm1$Dmr$, message=FALSE, echo=TRUE, warning=FALSE}
+```{r label0"stirm1$Dmr$, message=FALSE, echo=TRUE, warning=FALSE , eval = TRUE}
  storm1$Dmr<-storm1$Dm*pi/180
 ```
 
 We plot the samples in terms of the sea state
 
-```{r label="rosediag1", message=FALSE, echo=TRUE, warning=FALSE}
+```{r label="rosediag1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 require(gridExtra)
 
 r1 <- rose_diag(storm1$Dmr[storm1$state == "calm"],
@@ -177,42 +181,48 @@ r3 <- rose_diag(storm1$Dmr[storm1$state == "storm"],
 grid.arrange(r1, r2, r3, ncol = 3)
 ```
 
+![](rosediag1.png)
+
+
 It is very clear that the variability decreases from \emph{calm} to \emph{storm}, this is very relevant in terms of model choices. (to be completed....)
 First we select the  area where the storm is still in full force
-```{r label="storm2", message=FALSE, echo=TRUE, warning=FALSE}
+```{r label="storm2", message=FALSE, echo=TRUE, warning=FALSE, eval = TRUE}
   storm2 <- storm1[(storm1$state == "storm"),]
 ```
 further it is better  to convert the coordinates into UTM as the estimation algorithm uses euclidean distance.  We also hold out $10\%$ of the locations for validation purposes
 
-```{r label="traintest1", message=FALSE, echo=TRUE, warning=FALSE,cache=TRUE}
- nval <- round(nrow(storm2)*0.1)
- sample.val <- sort(sample(c(1:nrow(storm2)),nval))
- train <- storm2[-sample.val,]
- save(train, file = "train.RData")
- test <- storm2[sample.val,]
- save(test, file = "test.RData")
- coords <- storm2[,3:4]
- colnames(coords) = c("X","Y")
- attr(coords,"projection") <- "LL"
- attr(coords,"zone") <- 32
- coords2 <- PBSmapping::convUL(coords,km = T)
- coords.train <- coords2[-sample.val,]
- coords.test <- coords2[sample.val,]
- distance_matrix <- dist(coords2)
+```{r label="storm_fit_load", message=FALSE, warning=FALSE, include=FALSE}
+    data(storm)
+```
+
+
+```{r label="traintest1", message=FALSE, echo=TRUE, warning=FALSE,cache=TRUE, eval = FALSE}
+ nval0 <- round(nrow(storm2)*0.1)
+ sample.val0 <- sort(sample(c(1:nrow(storm2)),nval0))
+ train0 <- storm2[-sample.val0,]
+ test0 <- storm2[sample.val0,]
+ coords0 <- storm2[,3:4]
+ colnames(coords0) = c("X","Y")
+ attr(coords0,"projection") <- "LL"
+ attr(coords0,"zone") <- 32
+ coords0_2 <- PBSmapping::convUL(coords0,km = T)
+ coords0.train <- coords0_2[-sample.val0,]
+ coords0.test <- coords0_2[sample.val0,]
+ distance_matrix0 <- dist(coords0_2)
 ```
  We built the distance matrix among grid points to use distances in the definition of prior distribution for the parameter $\rho$. The elements for the definition of prior distributions are organized in a list that will be passed to the function \texttt{WrapSp}.
  The train and test datasets are
-```{r label="plot2",message=FALSE,echo=FALSE, warning=FALSE, cache=TRUE}
-train1 <- ggmap(get_map(location = c(min(train$Lon), min(train$Lat), 
-                                     max(train$Lon), max(train$Lat)), 
+```{r label="plot2",message=FALSE,echo=FALSE, warning=FALSE, cache=TRUE, , eval = FALSE}
+train0_map <- ggmap(get_map(location = c(min(train0$Lon), min(train0$Lat), 
+                                     max(train0$Lon), max(train0$Lat)), 
                         zoom = 8), 
                 base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
                                         fill = Hm0),
-                                    data = train)) +
+                                    data = train0)) +
   geom_raster(alpha = .5, vjust = - 1, hjust = 1) + 
   geom_contour() +
-  geom_spoke(radius = scales::rescale(train$Hm0, c(.01, .2)), 
-             angle = train$Dm*pi/180, 
+  geom_spoke(radius = scales::rescale(train0$Hm0, c(.01, .2)), 
+             angle = train0$Dm*pi/180, 
              arrow = arrow(length = unit(.05, 'cm')), alpha=0.3 ) +
   scale_fill_distiller(palette = "RdYlGn") + 
   labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", 
@@ -222,16 +232,16 @@ train1 <- ggmap(get_map(location = c(min(train$Lon), min(train$Lat),
         legend.direction = 'horizontal',
         plot.title = element_text(hjust=0.5), 
         plot.subtitle = element_text(hjust = 0.5))
-test1 <- ggmap(get_map(location = c(min(test$Lon), min(test$Lat),
-                                    max(test$Lon), max(test$Lat)), 
+test0_map <- ggmap(get_map(location = c(min(test0$Lon), min(test0$Lat),
+                                    max(test0$Lon), max(test0$Lat)), 
                        zoom = 8),
                base_layer = ggplot(aes(x = Lon, y = Lat, z = Hm0,
                                        fill = Hm0),
-                                   data = test)) +
+                                   data = test0)) +
   geom_raster(alpha = .5, vjust = - 1, hjust = 1) + 
   geom_contour() +
-  geom_spoke(radius = scales::rescale(test$Hm0, c(.01, .2)), 
-             angle = test$Dm*pi/180, 
+  geom_spoke(radius = scales::rescale(test0$Hm0, c(.01, .2)), 
+             angle = test0$Dm*pi/180, 
              arrow = arrow(length = unit(.05, 'cm')), alpha=0.3 ) +
   scale_fill_distiller(palette = "RdYlGn") + 
   labs(fill = "Wave Height (m) \n", title = "April 6, 2010 ", 
@@ -241,32 +251,33 @@ test1 <- ggmap(get_map(location = c(min(test$Lon), min(test$Lat),
         legend.direction = 'horizontal',
         plot.title = element_text(hjust=0.5), 
         plot.subtitle = element_text(hjust = 0.5))
-grid.arrange(train1,test1,ncol=2)
-
+grid.arrange(train0_map,test0_map,ncol=2)
 ```
 
+![](plot2.png)
+
+
 We now compute the empirical practical range interval and we are going to use it in the definition of the prior for the $\rho$ parameter. 
-```{r label="rhoprior1", message=FALSE, echo=TRUE, warning=FALSE}
- rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
- rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
+```{r label="rhoprior1", message=FALSE, echo=TRUE, warning=FALSE, eval = FALSE}
+ rho_max0 <- 3./min(distance_matrix0[which(distance_matrix0 > 0)])
+ rho_min0 <- 3./max(distance_matrix0[which(distance_matrix0 > 0)])
 ```
 The function \texttt{WrapSp} produces samples from the Wrapped Normal spatial model  posterior distribution as proposed in @Jona2013.As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
 \texttt{alpha, rho, beta, sigma2} vectors with the thinned chains of the simulated model parameters, $k$ a matrix with as many rows as the data and colums the length of thinned chains and \texttt{corr\_fun} a string with the type of spatial correlation chosen.
-In our example we choose an exponential correlation, we run 2 chains parallelizing the procedure, (qui ci va una descrizione delle prior e il meccanismo adattativo)
+In our example we choose an exponential correlation and we run 2 chains parallelizing the procedure.
 
-
-```{r label="run1",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE}
- start1 <- list("alpha"      = c(2*pi,3.14),
-	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
+```{r label="run1",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE}
+ start0 <- list("alpha"      = c(2*pi,3.14),
+	 "rho"     = c(.5*(rho_min0 + rho_max0),.1*(rho_min0 + rho_max0)),
 	 "sigma2"    = c(1,0.1),
 	 "beta"     = c(.3,0.01),
-	 "k"       = rep(0, nrow(train)))
- mod <- WrapSp(
- x     = train$Dmr,
- coords    = coords.train,
- start   = start1 ,
+	 "k"       = rep(0, nrow(train0)))
+ mod0 <- WrapSp(
+ x     = train0$Dmr,
+ coords    = coords0.train,
+ start   = start0 ,
  prior   = list("alpha"      = c(pi,10), # N
- "rho"     = c(rho_min, rho_max), #c(1.3,100), # G
+ "rho"     = c(rho_min0, rho_max0), #c(1.3,100), # G
  "sigma2"    = c(3,0.5),
  "beta"      = c(1,1,2)  # nugget prior 
  ) ,
@@ -280,57 +291,65 @@ In our example we choose an exponential correlation, we run 2 chains parallelizi
  n_chains = 2,
  parallel = T,
  n_cores = 2)
- save(mod, file = "mod.RData")
+ 
 ```
 
 We can control the convergence of the MCMC using the function \texttt{ConvCheck} that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
 
 ```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-check <- ConvCheck(mod)
+check <- ConvCheck(mod0)
 check$Rhat
 ```
 and the traceplots always remebering that \texttt{alpha} is a circular variable
-```{r label="trace1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
+```{r label="trace1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
 #par(mfrow=c(2,2))
- coda::traceplot(check$mcmc)
+library(coda)
+plot(check$mcmc, trace = TRUE, density = FALSE)
 ```
+
+![](trace1.png)
+
 Convergence is clearly achieved we can now proceed to estimate the values on the test sites using the posterior samples we just obtained.
-```{r label="krigstorm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE}
-Pred <- WrapKrig(
-   WrapSp_out = mod,
+```{r label="krigstorm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE}
+Pred0 <- WrapKrig(
+   WrapSp_out = mod0,
 ## The coordinates for the observed points
-  coords_obs = coords.train,
+  coords_obs = coords0.train,
 ## The coordinates of the validation points
-  coords_nobs = coords.test,
+  coords_nobs = coords0.test,
 ##the observed circular values
-   x_oss = train$Dmr
+   x_oss = train0$Dmr
  )
-save(Pred, file = "Pred.RData")
 ```
+
 Once the estimates are obtained we compute the Average Prediction Error again following @Jona2013
 ```{r label="APEstorm", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE}
-APE <- APEcirc( real = test$Dmr,
-                sim = Pred$Prev_out,
+APE <- APEcirc( real = test0$Dmr,
+                sim = Pred0$Prev_out,
                 bycol = F
 )
 APE
 ```
+
+
 ## Estimation of Wrapped models with large variability
 To very how things changes when we have to deal with largere variability we run the same approach on data from the "calm" area. This time as the area includes 708 points, we are going to use 50$\%$ of them for estimation and the remaining for validation.
 
+```{r label="calm_fit_load", message=FALSE, warning=FALSE, include=FALSE}
+  rm(list = ls())
+  library(CircSpaceTime)
+  data(calm)
+```
 
 ```{r label="calma1",message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE,eval=FALSE}
 calma<-apr6.2010[apr6.2010$state=="calm" & apr6.2010$hour=="20:00",]
-
 calma$Dmr<-calma$Dm*pi/180
-save(calma, file = "calma.RData")
 nval<-round(0.5*nrow(calma))
 sample.val<-sort(sample(c(1:nrow(calma)),nval))
-train<-calma[-sample.val,]
-save(train, file = "train.calma.RData")
-test<-calma[sample.val,]
-save(test, file = "test.calma.RData")
-coords<-calma[,3:4]
+train <- calma[-sample.val,]
+test <- calma[sample.val,]
+
+coords <- calma[,3:4]
 colnames(coords)=c("X","Y")
 attr(coords,"projection")<-"LL"
 attr(coords,"zone")<-32
@@ -372,11 +391,14 @@ mod <- WrapSp(
 save(mod, file = "mod.calma.RData")
 ```
 We check for convergence
-```{r label="calmacheck1", message=FALSE, echo=c(2,3,4,5), warning=FALSE, eval=TRUE}
+```{r label="calmacheck1", message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
 check <- ConvCheck(mod)
  check$Rhat
- #par(mfrow=c(2,2))
- coda::traceplot(check$mcmc)
+```
+
+```{r label="calmatrace1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+  library(coda)
+  plot(check$mcmc, trace = TRUE, density = FALSE)
 ```
 
 We clearly need to setup an update of the chains, we compute the posterior mean of the four moedl parameters and we use these values to start the two chains again. This time with a smaller number of interations and we use the adaptive algorithm (evita i crash ma devo giustificare meglio)
@@ -411,12 +433,17 @@ save(mod.up, file = "mod.up.RData")
 ```
 
 Again we check the chains convergence:
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
 check.up <- ConvCheck(mod.up)
 check.up$Rhat
-#par(mfrow=c(2,2))
-coda::traceplot(check.up$mcmc)
 ```
+
+```{r label="calmatrace2", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+#par(mfrow=c(2,2))
+plot(check.up$mcmc, trace = TRUE, density = FALSE)
+```
+
+![](calmatrace2.png)
 
 The convergence is reached and we can now move to the estimation on the test set.
 
@@ -430,19 +457,18 @@ Pred.calm = WrapKrig(
 ##the observed circular values
    x_oss = train$Dmr
  )
-save(Pred.calm, file = "Pred.calm.RData")
 ```
 
 Once the estimates are obtained we compute the Average Prediction Error again and we can build a map of the APE in each estimated point
 
-```{r label="plot3",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=TRUE}
-load("calma.RData")
-APE=APEcirc(
+```{r label="plot3",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=FALSE}
+
+APE <- APEcirc(
   real = test$Dmr,
   sim = Pred.calm$Prev_out,
   bycol=F
 )
-test$APE=APE$ApePoints
+test$APE <- APE$ApePoints
 require(ggmap)
 ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test$Lat)), zoom = 7),
       base_layer = ggplot(aes(x = Lon, y = Lat, z = APE,
@@ -454,8 +480,47 @@ ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test
   scale_fill_distiller(palette = "RdYlGn") + labs(fill = "APE \n", title = "April 6, 2010 ", subtitle = "calm-test, APE") +
   coord_equal(expand = 0) +
   theme(legend.position = 'bottom',  legend.direction = 'horizontal',plot.title = element_text(hjust=0.5), plot.subtitle = element_text(hjust = 0.5))
+
 ```
 
+![](calma_estimation.png)
+
 # Estimation of Projected Normal spatial models
+
+
+
+```{r}
+start0 <- list("alpha"      = c(0,0),
+               "rho0"     = c(.5*(rho_min0 + rho_max0)),
+               "rho" = c(.05),
+               "sigma2"    = c(0.1),
+               "r"= abs(rnorm(length(train0$Dmr))))
+mod0 <- ProjSp(
+  theta     = train0$Dmr,
+  coords    = coords0.train,
+  start   = start0 ,
+  prior   = list("alpha_mu"      = c(0,0),
+                 "alpha_sigma"   = diag(10,2),
+                 "rho0"     = c(rho_min0, rho_max0),
+                 "rho"      = c(-1,1),
+                 "sigma2"    = c(3,0.5)),
+  sd_prop   = list( "sigma2" = .1, "rho0" = 0.1, "rho" = .1,  "sdr" = sample(.05,length(train0$Dmr), replace = T)),
+  iter    = 4000,
+  bigSim    = c(burnin = 3000, thin = 1),
+  accept_ratio = 0.5,
+  adapt_param = c(start = 1000, end = 10000, esponente = 0.95, sdr_update_iter = 50),
+  corr_fun = "exponential", 
+  n_chains = 1,
+  parallel = T,
+  n_cores = 2)
+
+prev.krig <- ProjKrig(mod0[[1]], coords_obs = coords0.train,
+                      ## The coordinates of the validation points
+                      coords_nobs = coords0.test,
+                      ##the observed circular values
+                      theta_oss = train0$Dmr)
+
+```
+
 
 # References

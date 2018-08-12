@@ -32,7 +32,7 @@ devtools_installed <- require(devtools)
  
  ### From binary
  The package will be released on CRAN before the end of the 2018.
- For now you can download (win or mac) package [here](https://github.com/santoroma/CircSpaceTime/binary)
+ For now you can download (win or mac) package [here](https://github.com/santoroma/CircSpaceTime/tree/master/binary)
  
  Dependencies: circular, ggplot2, coda   
  Suggested: foreach, doParallel, knitr, rmarkdown, gridExtra   

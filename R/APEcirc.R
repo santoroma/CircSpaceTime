@@ -1,4 +1,5 @@
 #' Average Prediction Error for circular data.
+#'
 #' \code{APEcirc}  computes the average prediction error (APE), defined as the average circular distance across pairs of held out observations and associated predictive values where, for a given pair, we adopt as circular distance d(theta1,theta2) = 1 − cos(theta1 − theta2 )
 #'
 #' @param real a vector of the  values of the process at the test locations

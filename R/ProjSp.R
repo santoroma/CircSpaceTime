@@ -1,4 +1,4 @@
-#' ProjSp.
+#' Samples from the Projected Normal spatial model
 #'
 #'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
 #' as explanied in  G.Mastrantonio, G.JonaLasinio, A.E.Gelfand, Spatio-temporal circular models with non-separable covariance structure,TEST25(2016)331–350.
@@ -19,12 +19,11 @@
 #' \item{rho}  {a vector of 2 elements defining the shape and rate of a gamma distribution,}
 #' \item{ sigma2}  {a vector of 2 elements defining the shape and rate of an inverse-gamma distribution,}
 #' }
-#' @param sd.prop= list of 3 elements. To run the MCMC for the rho and sigma2 parameters we use an adaptive metropolis and in sd.prop we build a list of initial guesses for these two parameters and the beta parameter
-#' @param nugget  logical, if the measurement error term must be added, default to TRUE
+#' @param sd.prop= list of 4 elements. To run the MCMC for the rho, rho0 and sigma2 parameters and r vector we use an adaptive metropolis and in sd.prop we build a list of initial guesses for these three parameters and the r vector
 #' @param iter  iter number of iterations
 #' @param bigSim a vector of 2 elements with  the burnin and the chain thinning
 #' @param accept.ratio it is the desired acceptance ratio in the adaptive metropolis
-#' @param adapt.param a vector of 3 elements giving the iteration number at which the adaptation must start  and end. The third element (esponente)  must be a number in (0,1) is a parameter ruling the speed of changes in the adaptation algorithm, it is recommended to set it close to 1, if it is too small  non positive definite matrices may be generated and the program crashes.
+#' @param adapt.param a vector of 4 elements giving the iteration number at which the adaptation must start  and end. The third element (esponente)  must be a number in (0,1) is a parameter ruling the speed of changes in the adaptation algorithm, it is recommended to set it close to 1, if it is too small  non positive definite matrices may be generated and the program crashes. The last element (sdr_update_iter) must be a positive integer defining every how many iterations there is the update of the sd  (vector) of  (vector) r.
 #' @param corr_fun  characters, the name of the correlation function, currently implemented functions are c("exponential", "matern")
 #' @param n_chain numeric the number of chains to be lunched (we recommend to use at least 2 for model diagnostic)
 #' @param parallel logical, if the multiplechains  must be lunched in parallel

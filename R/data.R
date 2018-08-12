@@ -56,39 +56,5 @@
 #' @source  R. Inghilesi, A. Orasi & F. Catini (2016) The ISPRA Mediterranean Coastal Wave Forecasting system: evaluation and perspectives  Journal of Operational Oceanography Vol. 9 , Iss. sup1 \url{http://www.tandfonline.com/doi/full/10.1080/1755876X.2015.1115635}
 "may"
 
-#' Storm Vignette
-#'
-#' Data for compiling the storm part of the vignette without running the simulation.
-#'
-#'
-#'
-#'  An R image containing all the parameters and the results.
-#'  See the vignette CircSpaceTime
-#'
-#' @format All the calculated values and simulations needed in order
-#' to reproduce the storm estimations in the vignette
-#'
-#'\describe{
-#'  the R image is in ./data/mod0.RData}
-#'
-"mod0"
-
-
-#' Calm Vignette
-#'
-#' Data for compiling the calm part of the vignette without running the simulation.
-#'
-#'
-#'
-#'  An R image containing all the parameters and the results.
-#'  See the vignette CircSpaceTime
-#'
-#' @format All the calculated values and simulations needed in order
-#' to reproduce the calm estimations in the vignette
-#'
-#'#'\describe{
-#'  the R image is in ./data/mod.RData}
-#'
-"mod"
 
 

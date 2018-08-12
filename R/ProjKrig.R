@@ -1,4 +1,4 @@
-#' Kriging using Proj normal model.
+#' Kriging using projected normal model.
 #'
 #' \code{ProjKrig} function computes the Kriging prediction for circular spatial data
 #' as explanied in  G.Mastrantonio, G.JonaLasinio, A.E.Gelfand, Spatio-temporal circular models with non-separable covariance structure,TEST25(2016)331–350.
@@ -79,6 +79,8 @@
 #' x_oss = train$Dmr
 #' )
 #' @export
+#' @useDynLib CircSpaceTime
+#' @importFrom Rcpp sourceCpp
 ProjKrig <- function(
   ProjSp_out,
   coords_obs,

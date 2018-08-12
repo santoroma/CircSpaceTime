@@ -3,7 +3,8 @@
 #' \code{ConvCheck} returns an mcmc.list (mcmc) to be used with the \code{coda} package
 #' and the Potential scale reduction factors (Rhat) of the model parameters computed using the \code{gelman.diag} function in the coda package
 #'
-#' @param mod is a list with \eqn{m\ge 1} elements, one for each chain generated using  \code{\link{WrapSp}}
+#' @param mod is a list with \eqn{m\ge 1} elements, one for each chain generated using  \code{\link{WrapSp}} or \code{\link{ProjSp}}
+#' @param character, "Wrap" or "Proj"
 #' @param startit  is an integer, the iteration at which the chains start (required to build the mcmc.list)
 #' @param thin  is an integer the thinning applied to chains
 #' @return a list of two elements,
@@ -71,19 +72,37 @@
 #' require(coda)
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' @export
-ConvCheck <- function(mod, startit = 15000, thin = 10){
-n <- length(mod)
-#nit <- length(mod[[1]]$alpha)
-m1 <- list(n)
-for (i in 1:n) {
-	m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
-	                      beta = mod[[i]]$beta,
-	                      rho = mod[[i]]$rho,
-	                      sigma2 = mod[[i]]$sigma2)
-m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
+
+ConvCheck <- function(mod, dist, startit = 15000, thin = 10)
+  {
+#
+  n <- length(mod)
+  m1 <- list(n)
+  if (dist == "Wrap") {
+    for (i in 1:n) {
+  	  m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
+  	                      beta = mod[[i]]$beta,
+  	                      rho = mod[[i]]$rho,
+  	                      sigma2 = mod[[i]]$sigma2)
+      m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
+    }
+    m1 <- coda::mcmc.list(m1)
+    rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
+                          autoburnin = TRUE)
+    return(list(Rhat = rb, mcmc = m1))
+  }
+  if (dist == "Proj") {
+    for (i in 1:n) {
+      m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
+                            rho0 = mod[[i]]$rho0,
+                            rho = mod[[i]]$rho,
+                            sigma2 = mod[[i]]$sigma2)
+      m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
+    }
+    m1 <- coda::mcmc.list(m1)
+    rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
+                            autoburnin = TRUE)
+    return(list(Rhat = rb, mcmc = m1))
+  }
 }
-m1 <- coda::mcmc.list(m1)
-rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
-                        autoburnin = TRUE)
-return(list(Rhat = rb, mcmc = m1))
-}
+

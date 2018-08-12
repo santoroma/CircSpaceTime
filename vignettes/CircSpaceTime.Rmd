@@ -157,7 +157,7 @@ geom_contour() +
 map1
 ```
 
-![](map1.png)
+![](map1.png){ width=70% }
 
 
 We convert the directions into radians
@@ -182,7 +182,7 @@ r3 <- rose_diag(storm1$Dmr[storm1$state == "storm"],
 grid.arrange(r1, r2, r3, ncol = 3)
 ```
 
-![](rosediag1.png)
+![](rosediag1.png){ width=70% }
 
 
 It is very clear that the variability decreases from \emph{calm} to \emph{storm}, this is very relevant in terms of model choices. (to be completed....)
@@ -191,10 +191,6 @@ First we select the  area where the storm is still in full force
   storm2 <- storm1[(storm1$state == "storm"),]
 ```
 further it is better  to convert the coordinates into UTM as the estimation algorithm uses euclidean distance.  We also hold out $10\%$ of the locations for validation purposes
-
-```{r label="storm_fit_load", message=FALSE, warning=FALSE, include=FALSE}
-    data(storm)
-```
 
 
 ```{r label="traintest1", message=FALSE, echo=TRUE, warning=FALSE,cache=TRUE, eval = FALSE}
@@ -255,7 +251,7 @@ test0_map <- ggmap(get_map(location = c(min(test0$Lon), min(test0$Lat),
 grid.arrange(train0_map,test0_map,ncol=2)
 ```
 
-![](plot2.png)
+![](plot2.png){ width=70% }
 
 
 We now compute the empirical practical range interval and we are going to use it in the definition of the prior for the $\rho$ parameter. 
@@ -298,12 +294,24 @@ In our example we choose an exponential correlation and we run 2 chains parallel
 We can control the convergence of the MCMC using the function \texttt{ConvCheck} that  returns an mcmc.list (mcmc) to be used with the \texttt{coda} package and the Potential scale reduction factors (Rhat) of the model parameters computed using the \texttt{gelman.diag} function in the coda package.
 
 ```{r label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
-check.storm <- ConvCheck(storm)
+check.storm <- ConvCheck(storm, dist = "Wrap")
 check.storm$Rhat
 ```
 
-```{r label="print_check1", message=FALSE, echo=FALSE, warning=FALSE, cache=FALSE, }
-check.storm$Rhat
+```{r print_check1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- " 
+|         | Point est.| Upper C.I. |
+|---------|:---------:|-----------:|
+| alpha   | 1.00      | 1.01       |
+| beta    | 1.00      | 1.01       |
+| rho     | 1.00      | 1.01       |
+| sigma2  | 1.00      | 1.00       |
+
+Multivariate psrf
+
+1
+"
+cat(tabl) 
 ```
 and the traceplots always remebering that \texttt{alpha} is a circular variable
 ```{r label="trace1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE}
@@ -312,7 +320,7 @@ library(coda)
 plot(check$mcmc, trace = TRUE, density = FALSE)
 ```
 
-![](trace1.png)
+![](trace1.png){ width=70% }
 
 Convergence is clearly achieved we can now proceed to estimate the values on the test sites using the posterior samples we just obtained.
 ```{r label="krigstorm",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE}
@@ -333,21 +341,15 @@ APE_storm <- APEcirc( real = test0$Dmr,
                 sim = Pred.storm$Prev_out,
                 bycol = F
 )
-APE_storm
+APE_storm$Ape
 ```
 
 ```{r label="APEstorm_print", message=FALSE, echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
-APE_storm
+0.0006645222
 ```
 
 ## Estimation of Wrapped models with large variability
 To very how things changes when we have to deal with largere variability we run the same approach on data from the "calm" area. This time as the area includes 708 points, we are going to use 50$\%$ of them for estimation and the remaining for validation.
-
-```{r label="calm_fit_load", message=FALSE, warning=FALSE, include=FALSE}
-  rm(list = ls())
-  library(CircSpaceTime)
-  data(calm)
-```
 
 ```{r label="calma1",message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE,eval=FALSE}
 calma<-apr6.2010[apr6.2010$state=="calm" & apr6.2010$hour=="20:00",]
@@ -399,19 +401,31 @@ calm <- WrapSp(
 ```
 We check for convergence
 ```{r label="calmacheck1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
-check.calm <- ConvCheck(mod)
+check.calm <- ConvCheck(calm, dist = "Wrap")
  check.calm$Rhat
 ```
 
-```{r label="print.calmacheck1", message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
-check.calm <- ConvCheck(mod)
- check.calm$Rhat
+```{r print_calmacheck1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- " 
+|         | Point est.| Upper C.I. |
+|---------|:---------:|-----------:|
+| alpha   | 1.09      | 1.35       |
+| beta    | 1.14      | 1.47       |
+| rho     | 1.20      | 1.69       |
+| sigma2  | 1.02      | 1.02       |
+
+Multivariate psrf
+
+1.43
+"
+cat(tabl) 
 ```
 
 ```{r label="calmatrace1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
   library(coda)
-  plot(check$mcmc, trace = TRUE, density = FALSE)
+  plot(check.calm$mcmc, trace = TRUE, density = FALSE)
 ```
+![](calmatrace.png){ width=70% }
 
 We clearly need to setup an update of the chains, we compute the posterior mean of the four moedl parameters and we use these values to start the two chains again. This time with a smaller number of interations and we use the adaptive algorithm (evita i crash ma devo giustificare meglio)
 ```{r label="calmarun2", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
@@ -444,13 +458,25 @@ calm.up = WrapSp(
 ```
 
 Again we check the chains convergence:
-```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
-check.up <- ConvCheck(calma.up)
-check.up$Rhat
+```{r label="check_calm_up", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+check.calm.up <- ConvCheck(calm.up, dist = "Wrap")
+check.calm.up$Rhat
 ```
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
-check.up$Rhat
+```{r label="print_check_calm_up", echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- " 
+|         | Point est.| Upper C.I. |
+|---------|:---------:|-----------:|
+| alpha   | 1.00      | 1.01       |
+| beta    | 1.01      | 1.03       |
+| rho     | 1.01      | 1.04       |
+| sigma2  | 1.03      | 1.03       |
+
+Multivariate psrf
+
+1.03
+"
+cat(tabl) 
 ```
 
 ```{r label="calmatrace2", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
@@ -458,11 +484,11 @@ check.up$Rhat
 plot(check.up$mcmc, trace = TRUE, density = FALSE)
 ```
 
-![](calmatrace2.png)
+![](calmatrace2.png){ width=70% }
 
 The convergence is reached and we can now move to the estimation on the test set.
 
-```{r label="kigcalma", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE}
+```{r label="krigcalma", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE}
 Pred.calm = WrapKrig(
    WrapSp_out = calm.up,
 ## The coordinates for the observed points
@@ -483,11 +509,11 @@ APE.calm <- APEcirc(
   sim = Pred.calm$Prev_out,
   bycol=F
 )
-APE.calm
+APE.calm$Ape
 ```
 
 ```{r label="print_ape_calm",message=FALSE, echo=FALSE, warning=FALSE, cache=TRUE,eval=TRUE}
-APE.calm
+0.1398498
 ```
 
 
@@ -507,44 +533,71 @@ ggmap(get_map(location = c(min(test$Lon), min(test$Lat), max(test$Lon), max(test
 
 ```
 
-![](calma_estimation.png)
+![](calma_estimation.png){ width=60% }
 
 # Estimation of Projected Normal spatial models
 
+Now we will do the predictions on storm example using the Projected Normal (PN) spatial model as reported in @mastrantonio2015b.
+The function \texttt{ProjSp} produces samples from the PN. As inputs it requires  a vector of $n$ circular data in $[0,2\pi]$, a matrix of coordinates and two lists, one of starting values for the MCMC and the other for the prior distributions definition. Further inputs are related to computational options such as the number of chains, if the computation should be parallelized and the numebr of iterations\footnote{see the help file for a detailed description}. The output is a list  of as many lists as the number of chains each with elements
+\texttt{alpha, rho0, rho, sigma2} vectors with the thinned chains of the simulated model parameters, $r$ a matrix with as many rows as the data and colums the length of thinned chains and \texttt{corr\_fun} a string with the type of spatial correlation chosen.
+In our example we choose an exponential correlation and we run 2 chains parallelizing the procedure.
 
-
-```{r eval=FALSE}
-start0 <- list("alpha"      = c(0,0),
-               "rho0"     = c(.5*(rho_min0 + rho_max0)),
-               "rho" = c(.05),
-               "sigma2"    = c(0.1),
+```{r label="run1_PN",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE}
+start0_PN <- list("alpha"      = c(0,0,.5,.5),
+               "rho0"     = c(.5*(rho_min0 + rho_max0),
+                              .1*(rho_min0 + rho_max0)),
+               "rho" = c(.05, .1),
+               "sigma2"    = c(0.1, .05),
                "r"= abs(rnorm(length(train0$Dmr))))
-mod0 <- ProjSp(
+mod0_PN <- ProjSp(
   x     = train0$Dmr,
   coords    = coords0.train,
-  start   = start0 ,
+  start   = start0_PN ,
   prior   = list("alpha_mu"      = c(0,0),
                  "alpha_sigma"   = diag(10,2),
                  "rho0"     = c(rho_min0, rho_max0),
                  "rho"      = c(-1,1),
                  "sigma2"    = c(3,0.5)),
   sd_prop   = list( "sigma2" = .1, "rho0" = 0.1, "rho" = .1,  "sdr" = sample(.05,length(train0$Dmr), replace = T)),
-  iter    = 4000,
-  bigSim    = c(burnin = 3000, thin = 1),
+  iter    = 5000,
+  bigSim    = c(burnin = 3500, thin = 1),
   accept_ratio = 0.5,
   adapt_param = c(start = 1000, end = 10000, esponente = 0.95, sdr_update_iter = 50),
   corr_fun = "exponential", 
-  n_chains = 1,
+  n_chains = 2,
   parallel = T,
   n_cores = 2)
+```
 
-prev.krig <- ProjKrig(mod0[[1]], coords_obs = coords0.train,
+
+
+```{r label="krigPN", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE}
+Pred.krig_PN <- ProjKrig(mod0_PN, coords_obs = coords0.train,
                       ## The coordinates of the validation points
                       coords_nobs = coords0.test,
                       ##the observed circular values
                       x_oss = train0$Dmr)
-
 ```
+
+We can compare the predictions of the two models using the average prediction error
+
+```{r label="PN_Wrap_comparison", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE}
+
+APE_PN <- APEcirc( real = test0$Dmr,
+                sim = Pred.krig_PN$Prev_out,
+                bycol = F
+)
+```
+
+```{r print_calmacheck1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- " 
+|                           | Wrapped | Projected |
+|---------------------------|:-------:|----------:|
+| Average Prediction Error  | 0.0007  | 0.0010    |
+"
+cat(tabl) 
+```
+
 
 
 # References

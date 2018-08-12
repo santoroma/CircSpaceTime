@@ -589,7 +589,7 @@ APE_PN <- APEcirc( real = test0$Dmr,
 )
 ```
 
-```{r print_calmacheck1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+```{r print_APE_comparison, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
 tabl <- " 
 |                           | Wrapped | Projected |
 |---------------------------|:-------:|----------:|

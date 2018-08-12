@@ -130,7 +130,7 @@ storm1 <- april$apr6.2010[april$apr6.2010$hour == "20:00",]
 #  
 
 ## ----label="check1", message=FALSE, echo=TRUE, warning=FALSE, cache=FALSE, eval=FALSE----
-#  check.storm <- ConvCheck(storm)
+#  check.storm <- ConvCheck(storm, dist = "Wrap")
 #  check.storm$Rhat
 
 ## ----print_check1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'----
@@ -221,7 +221,7 @@ cat(tabl)
 #    n_cores=2)
 
 ## ----label="calmacheck1", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE----
-#  check.calm <- ConvCheck(calm)
+#  check.calm <- ConvCheck(calm, dist = "Wrap")
 #   check.calm$Rhat
 
 ## ----print_calmacheck1, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'----
@@ -271,11 +271,11 @@ cat(tabl)
 #    parallel=T,
 #    n_cores=2)
 
-## ----message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE-----------------
-#  check.calm.up <- ConvCheck(calm.up)
+## ----label="check_calm_up", message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE----
+#  check.calm.up <- ConvCheck(calm.up, dist = "Wrap")
 #  check.calm.up$Rhat
 
-## ----print_check_calm_up, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'----
+## ----label="print_check_calm_up", echo=FALSE, message=FALSE, warnings=FALSE, results='asis'----
 tabl <- " 
 |         | Point est.| Upper C.I. |
 |---------|:---------:|-----------:|
@@ -294,7 +294,7 @@ cat(tabl)
 #  #par(mfrow=c(2,2))
 #  plot(check.up$mcmc, trace = TRUE, density = FALSE)
 
-## ----label="kigcalma", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE----
+## ----label="krigcalma", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE----
 #  Pred.calm = WrapKrig(
 #     WrapSp_out = calm.up,
 #  ## The coordinates for the observed points
@@ -333,10 +333,11 @@ cat(tabl)
 #  
 
 ## ----label="run1_PN",message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval = FALSE----
-#  start0_PN <- list("alpha"      = c(0,0),
-#                 "rho0"     = c(.5*(rho_min0 + rho_max0)),
-#                 "rho" = c(.05),
-#                 "sigma2"    = c(0.1),
+#  start0_PN <- list("alpha"      = c(0,0,.5,.5),
+#                 "rho0"     = c(.5*(rho_min0 + rho_max0),
+#                                .1*(rho_min0 + rho_max0)),
+#                 "rho" = c(.05, .1),
+#                 "sigma2"    = c(0.1, .05),
 #                 "r"= abs(rnorm(length(train0$Dmr))))
 #  mod0_PN <- ProjSp(
 #    x     = train0$Dmr,
@@ -353,14 +354,29 @@ cat(tabl)
 #    accept_ratio = 0.5,
 #    adapt_param = c(start = 1000, end = 10000, esponente = 0.95, sdr_update_iter = 50),
 #    corr_fun = "exponential",
-#    n_chains = 1,
+#    n_chains = 2,
 #    parallel = T,
 #    n_cores = 2)
-#  
-#  prev.krig <- ProjKrig(mod0[[1]], coords_obs = coords0.train,
+
+## ----label="krigPN", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE----
+#  Pred.krig_PN <- ProjKrig(mod0_PN, coords_obs = coords0.train,
 #                        ## The coordinates of the validation points
 #                        coords_nobs = coords0.test,
 #                        ##the observed circular values
 #                        x_oss = train0$Dmr)
+
+## ----label="PN_Wrap_comparison", message=FALSE, echo=TRUE, warning=FALSE, cache=TRUE, eval=FALSE----
 #  
+#  APE_PN <- APEcirc( real = test0$Dmr,
+#                  sim = Pred.krig_PN$Prev_out,
+#                  bycol = F
+#  )
+
+## ----print_APE_comparison, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'----
+tabl <- " 
+|                           | Wrapped | Projected |
+|---------------------------|:-------:|----------:|
+| Average Prediction Error  | 0.0007  | 0.0010    |
+"
+cat(tabl) 
 

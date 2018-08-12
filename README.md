@@ -13,4 +13,26 @@ Spatio-Temporal Projected Normal
 
 We are going to update constantly the library with Bayesian and classical models dealing with complex dependence structures for circular, cylindrical and spherical variable.
 
+## Installation
 
+### From source
+If you are linux/linux-like users or simply you want to compile from source the best way is to use "devtools"
+
+``` r
+devtools_installed <- require(devtools)
+ if (!devtools_installed){
+   install.packages("devtools", dep = TRUE)
+    library(devtools)
+    }
+  install_github("santoroma/CircSpaceTime")  
+ ``` 
+ 
+ Dependencies: Rcpp, RcppArmadillo, circular, ggplot2, coda
+ Suggested: foreach, doParallel, knitr, rmarkdown, gridExtra
+ 
+ ### From binary
+ The package will be released on CRAN before the end of the 2018.
+ For now you can download (win or mac) package [here](https://github.com/santoroma/CircSpaceTime/binary)
+ 
+ Dependencies: circular, ggplot2, coda
+ Suggested: foreach, doParallel, knitr, rmarkdown, gridExtra

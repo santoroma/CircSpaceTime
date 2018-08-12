@@ -43,7 +43,7 @@ devtools_installed <- require(devtools)
  library(CircSpaceTime)
  ```
  
- For further information on the package you read the help or take a first look at the [vignette](https://github.com/santoroma/CircSpaceTime/inst/doc/CircSpaceTime.html)
+ For further information on the package you read the help or take a first look at the [vignette](https://github.com/santoroma/CircSpaceTime/blob/master/inst/doc/CircSpaceTime.html)
 
 ## Issues
 

@@ -4,7 +4,7 @@ using namespace Rcpp;
 #define _USE_MATH_DEFINES
 
 // [[Rcpp::export]]
-List WrapKrigCpp(
+List WrapKrigSpTiCpp(
     NumericVector sigma2, NumericVector alpha, NumericVector rho, NumericVector rho_t,
     NumericVector sep_par, IntegerMatrix k,
     int n, int nsample, arma::mat H_tot, arma::mat Ht_tot, int nprev, NumericVector x

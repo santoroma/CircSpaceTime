@@ -8,8 +8,8 @@ List WrapSpTiRcpp(
     int ad_start, int ad_end, double ad_esp,
     int burnin, int thin, int iter_1, int iter_2,
     int n_j,
-    NumericVector prior_alpha, NumericVector prior_rho, NumericVector prior_rho_t, NumericVector prior_sep_par,
-    NumericVector prior_sigma2,
+    NumericVector prior_alpha, NumericVector prior_rho, NumericVector prior_rho_t,
+    NumericVector prior_sep_par, NumericVector prior_sigma2,
     double sdrho, double sdrho_t, double sdsep_par, double sdsigma2,
     double alpha, double rho, double rho_t, double sep_par, double sigma2, IntegerVector k,
     NumericVector x, arma::mat H, arma::mat Ht, double acceptratio

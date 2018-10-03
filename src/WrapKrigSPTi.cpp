@@ -48,7 +48,7 @@ List WrapKrigSpTiCpp(
       for(h=0;h<n;h++)
       {
         double ttt = (rho_t[KrigI] * pow(Ht_tot(h,i),2) +1.);
-        Cor_inv(h,i) = ttt * exp(-rho[KrigI]*H_tot(h,i)/pow(ttt,sep_par[KrigI]/2.));
+        Cor_inv(h,i) = 1.0/ttt * exp(-rho[KrigI]*H_tot(h,i)/pow(ttt,sep_par[KrigI]/2.));
       }
     }
 
@@ -65,7 +65,7 @@ List WrapKrigSpTiCpp(
       for(h=0;h<n;h++)
       {
         double ttt2 = (rho_t[KrigI] * pow(Ht_tot(h,(i+n)),2) +1.);
-        Cov(h,i) = ttt2 * exp(-rho[KrigI]*H_tot(h,(i+n))/pow(ttt2,sep_par[KrigI]/2.));
+        Cov(h,i) = 1.0/ttt2 * exp(-rho[KrigI]*H_tot(h,(i+n))/pow(ttt2,sep_par[KrigI]/2.));
       }
     }
 

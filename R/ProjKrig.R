@@ -6,7 +6,7 @@
 #' @param ProjSp_out the functions takes the output of \code{ProjSp} function
 #' @param coords_obs coordinates of observed locations (in UTM)
 #' @param coords_nobs coordinates of unobserved locations (in UTM)
-#' @param x_oss observed values
+#' @param x_oss observed values in \eqn{[0,2\pi)} SE NON é NELL?INTERVALLO; LA FUNZIONE LO TRASFORMA NELL?INTERVALLO GIUSTO
 #' @return a list of 3 elements
 #' \describe{
 #'	\item{M_out} {the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by WrapSp}
@@ -90,6 +90,7 @@ ProjKrig <- function(
 {
 #  MeanCirc <- circular::mean.circular(x_oss)
 #  x_oss <- (x_oss - MeanCirc + pi) %% (2*pi)
+  x_oss = x_oss%%(2*pi)
 
   AppName <- names(ProjSp_out[[1]])
   AppName[1] <- "rstar"
@@ -118,5 +119,6 @@ ProjKrig <- function(
   H_tot	<- as.matrix(stats::dist(rbind(coords_obs,coords_nobs)))
   out <- ProjKrigCpp(sigma2,rho, rho0, alpha, r, n, nsample,	H_tot,nprev, x_oss, corr_fun, kappa_matern)
 #  out$Prev_out <- (out$Prev_out - pi + MeanCirc) %% (2*pi)
+out$Prev_out = out$Prev_out%%(2*pi)
   return(out)
   }

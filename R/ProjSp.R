@@ -1,8 +1,8 @@
 #' Samples from the Projected Normal spatial model
 #'
-#'  \code{ProjSp} produces samples from the Projected Normal spatial model  posterior distribution
-#' as explanied in  G.Mastrantonio, G.JonaLasinio, A.E.Gelfand, Spatio-temporal circular models with non-separable covariance structure,TEST25(2016)331–350.
-#' @param  x a vector of n circular data in \eqn{[0,2\pi)}
+#'  \code{ProjSp} produces posterior samples from the Projected Normal spatial model  posterior distribution
+#' as explained in  G. Mastrantonio, G.Jona Lasinio, A. E. Gelfand, Spatio-temporal circular models with non-separable covariance structure, TEST 25 (2016), 331–350.
+#' @param  x a vector of n circular data in \eqn{[0,2\pi)} SE NON é NELL?INTERVALLO; LA FUNZIONE LO TRASFORMA NELL?INTERVALLO GIUSTO
 #' @param  coords an nx2 matrix with the sites coordinates
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
@@ -120,10 +120,7 @@ ProjSp  <- function(
   n_chains = 2, parallel = FALSE, n_cores = 2)
 {
 
-  ## ## ## ## ## ## ##
-  ## Sim
-  ## ## ## ## ## ## ##
-  ## ## ## ## ## ## ##
+  x = x%%(2*pi)
 
   #######
   burnin					=	bigSim[1]

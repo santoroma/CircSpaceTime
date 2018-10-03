@@ -6,7 +6,7 @@
 #' @param  coords an nx2 matrix with the sites coordinates
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
-#' \item 	alpha the mean,
+#' \item 	alpha the mean BISOGNA METTERE IL DOMINIO CHE DOVREBBE ESSERE 0 2pi,
 #' \item  rho the spatial decay parameter,
 #' \item sigma2 the process variance,
 #' \item k the vector of \code{length(x)}  winding numbers

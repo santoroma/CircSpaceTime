@@ -95,7 +95,7 @@ WrapKrigSpTi <- function(
   rho <- as.numeric(pp[regexpr("rho",names(pp)) == 1])
   rho_t <- as.numeric(pp[regexpr("rho_t",names(pp)) == 1])
   sep_par <- as.numeric(pp[regexpr("sep_par",names(pp)) == 1])
-  row.k <- nrow(WrapSp_out[[1]]$k)
+  row.k <- nrow(WrapSpTi_out[[1]]$k)
   pp2 <- as.numeric(pp[regexpr("k",names(pp)) == 1])
   k <- matrix(pp2,nrow = row.k)
   rm(pp,pp2)

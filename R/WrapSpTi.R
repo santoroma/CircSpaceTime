@@ -148,10 +148,14 @@ WrapSpTi  <- function(
   # priori
   prior_alpha				=	prior[["alpha"]]
   prior_rho				=	prior[["rho"]]
+  prior_rho_t				=	prior[["rho_t"]]
   prior_sigma2			=	prior[["sigma2"]]
+  prior_sep_par			=	prior[["sep_par"]]
   # sd proposal
   sdprop_sigma2 = sd_prop[["sigma2"]]
   sdprop_rho	= sd_prop[["rho"]]
+  sdprop_rho_t	= sd_prop[["rho"]]
+  sdprop_sep_par	= sd_prop[["sep_par"]]
   # starting
   start_alpha				=	(start[["alpha"]] - MeanCirc + pi) %% (2*pi)
   if (length(start_alpha) != n_chains) {stop(paste('start[["alpha"]] length should be equal to n_chains (',
@@ -159,12 +163,21 @@ WrapSpTi  <- function(
   start_rho				=	start[["rho"]]
   if (length(start_rho) != n_chains) {stop(paste('start[["rho"]] length should be equal to n_chains (',
                                                 n_chains,')', sep = ''))}
+
+  start_rho_t				=	start[["rho_t"]]
+  if (length(start_rho) != n_chains) {stop(paste('start[["rho_t"]] length should be equal to n_chains (',
+                                                n_chains,')', sep = ''))}
+  start_sep_par				=	start[["sep_par"]]
+  if (length(start_rho) != n_chains) {stop(paste('start[["sep_par"]] length should be equal to n_chains (',
+                                                n_chains,')', sep = ''))}
   start_sigma2			=	start[["sigma2"]]
   if (length(start_sigma2) != n_chains) {stop(paste('start[["sigma2"]] length should be equal to n_chains (',
                                                    n_chains,')', sep = ''))}
   start_k					=	start[["k"]]
   acceptratio = accept_ratio
-  if (length(start_beta) != n_chains) {stop(paste('start[["beta"]] length should be equal to n_chains (',n_chains,')', sep = ''))}
+  #if (length(start_beta) != n_chains) {stop(paste('start[["beta"]] length should be equal to n_chains (',n_chains,')', sep = ''))}
+
+
     if (parallel) {
       ccc <- try(library(doParallel))
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
@@ -172,13 +185,16 @@ WrapSpTi  <- function(
       registerDoParallel(cl)
       out <- foreach(i = 1:n_chains) %dopar% {
         out_temp <- WrapSpTiRcpp(ad_start, ad_end, ad_esp,
-                                 burnin, thin,iter_1,iter_2,
-                                 n_j,
-                                 prior_alpha,prior_rho,prior_sigma2, prior_beta,
-                                 sdprop_rho,sdprop_sigma2,sdprop_beta,
-                                 start_alpha[i],start_rho[i],start_sigma2[i],
-                                 start_beta[i], start_k,
-                                 x,H, Ht, acceptratio)
+                              burnin, thin,iter_1,iter_2,
+                              n_j,
+                              prior_alpha,prior_rho,prior_rho_t,prior_sep_par,prior_sigma2, 
+                              #prior_beta,
+                              sdprop_rho,sdprop_rho_t,sdprop_sep_par,sdprop_sigma2,
+                              #sdprop_beta,
+                              start_alpha[i],start_rho[i],start_rho_t[i],start_sep_par[i],start_sigma2[i],
+                              #start_beta[i], 
+                              start_k,
+                              x,H, Ht, acceptratio)
         out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
         out_temp
       }
@@ -189,11 +205,21 @@ WrapSpTi  <- function(
         out_temp =  WrapSpTiRcpp(ad_start, ad_end, ad_esp,
                               burnin, thin,iter_1,iter_2,
                               n_j,
-                              prior_alpha,prior_rho,prior_sigma2, prior_beta,
-                              sdprop_rho,sdprop_sigma2,sdprop_beta,
-                              start_alpha[i],start_rho[i],start_sigma2[i],
-                              start_beta[i], start_k,
+                              prior_alpha,prior_rho,prior_rho_t,prior_sep_par,prior_sigma2, 
+                              #prior_beta,
+                              sdprop_rho,sdprop_rho_t,sdprop_sep_par,sdprop_sigma2,
+                              #sdprop_beta,
+                              start_alpha[i],start_rho[i],start_rho_t[i],start_sep_par[i],start_sigma2[i],
+                              #start_beta[i], 
+                              start_k,
                               x,H, Ht, acceptratio)
+
+                             
+
+    
+    
+
+
         out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
         out[[i]] <- out_temp
       }

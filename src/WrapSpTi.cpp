@@ -19,7 +19,7 @@ List WrapSpTiRcpp(
   /*****************************************
   //                Varie ed eventuali
   // *****************************************/
-
+Rprintf("A1\n");
   int i;
   arma::vec y(n_j);
   for(i=0;i<n_j;i++)
@@ -37,7 +37,7 @@ List WrapSpTiRcpp(
   // INDICI
 
   int h,j;
-
+Rprintf("A2 %f %f\n", rho_t, rho);
   // Gneiting Covariance
   arma::mat Cor_inv(n_j,n_j);
   double logdet_cor;
@@ -47,9 +47,18 @@ List WrapSpTiRcpp(
     for(h=0;h<n_j;h++)
     {
       double ttt = (rho_t * pow(Ht(h,i),2) +1.);
-      Cor_inv(h,i) = ttt * exp(-rho*H(h,i)/pow(ttt,sep_par/2.));
+      Cor_inv(h,i) = 1.0/ttt * exp(-rho*H(h,i)/pow(ttt,sep_par/2.));
     }
   }
+  // for(i=0;i<10;i++)
+  // {
+  //   for(h=0;h<10;h++)
+  //   {
+  //     Rprintf("%f ", Cor_inv(h,i));
+  //   }
+  //   Rprintf("\n");
+  // }
+  Rprintf("A3\n");
   // Cor_inv.save("Cor_inv_PRE.csv", arma::csv_ascii);
   logdet_cor = 0.0;
   arma::log_det(logdet_cor, sign, Cor_inv);
@@ -64,7 +73,7 @@ List WrapSpTiRcpp(
   arma::vec app_alpha(n_j);
   double Valpha;
   double Malpha;
-
+Rprintf("A4\n");
   // SP
   double sigma2_p;
   double rho_p;
@@ -94,7 +103,7 @@ List WrapSpTiRcpp(
   {
     yMalpha[i] = y[i]- alpha;
   }
-
+Rprintf("A5\n");
   double MH_N_sp;
   arma::vec app_MH_N_sp(n_j);
   double MH_D_sp;
@@ -112,7 +121,7 @@ List WrapSpTiRcpp(
   mean_sp[2] = rho_t + R::rnorm(0.0,0.1);
   mean_sp[3] = sep_par + R::rnorm(0.0,0.1);
 
-
+Rprintf("A6\n");
 
   arma::mat Mat_ad_k(n_j,n_j);
   arma::mat app_Mat_ad_k(n_j,n_j);
@@ -140,7 +149,7 @@ List WrapSpTiRcpp(
   arma::vec mean_k(n_j);
 
 
-
+Rprintf("A7\n");
 
   // to save
   int nSamples_save = iter_2;
@@ -173,7 +182,7 @@ List WrapSpTiRcpp(
 
   //    int nnn=0;
 
-
+Rprintf("A8\n");
 
   for(iMCMC2=0;iMCMC2<iter_2;iMCMC2++)
   {
@@ -239,7 +248,7 @@ List WrapSpTiRcpp(
         for(h=0;h<n_j;h++)
         {
           double ttt = (rho_t_p * pow(Ht(h,i),2) +1.);
-          Cor_inv_p(h,i) = ttt * exp(-rho_p*H(h,i)/pow(ttt,sep_par/2.));
+          Cor_inv_p(h,i) = 1.0/ttt * exp(-rho_p*H(h,i)/pow(ttt,sep_par/2.));
         }
       }
       logdet_cor_p = 0.0;

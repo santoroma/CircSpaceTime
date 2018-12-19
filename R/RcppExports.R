@@ -17,11 +17,19 @@ WrapKrigCpp <- function(sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr
     .Call('_CircSpaceTime_WrapKrigCpp', PACKAGE = 'CircSpaceTime', sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern)
 }
 
+WrapKrigSpTiCpp <- function(sigma2, alpha, rho, rho_t, sep_par, k, n, nsample, H_tot, Ht_tot, nprev, x) {
+    .Call('_CircSpaceTime_WrapKrigSpTiCpp', PACKAGE = 'CircSpaceTime', sigma2, alpha, rho, rho_t, sep_par, k, n, nsample, H_tot, Ht_tot, nprev, x)
+}
+
 WrapSpRcpp_nugget <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, prior_beta, sdrho, sdsigma2, sdbeta, alpha, rho, sigma2, beta, k, x, H, acceptratio, corr_fun, kappa_matern) {
     .Call('_CircSpaceTime_WrapSpRcpp_nugget', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, prior_beta, sdrho, sdsigma2, sdbeta, alpha, rho, sigma2, beta, k, x, H, acceptratio, corr_fun, kappa_matern)
 }
 
 WrapSpRcpp <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, sdrho, sdsigma2, alpha, rho, sigma2, k, x, H, acceptratio, corr_fun, kappa_matern) {
     .Call('_CircSpaceTime_WrapSpRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_sigma2, sdrho, sdsigma2, alpha, rho, sigma2, k, x, H, acceptratio, corr_fun, kappa_matern)
+}
+
+WrapSpTiRcpp <- function(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_rho_t, prior_sep_par, prior_sigma2, sdrho, sdrho_t, sdsep_par, sdsigma2, alpha, rho, rho_t, sep_par, sigma2, k, x, H, Ht, acceptratio) {
+    .Call('_CircSpaceTime_WrapSpTiRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_rho_t, prior_sep_par, prior_sigma2, sdrho, sdrho_t, sdsep_par, sdsigma2, alpha, rho, rho_t, sep_par, sigma2, k, x, H, Ht, acceptratio)
 }
 

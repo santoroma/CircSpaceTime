@@ -109,6 +109,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// WrapKrigSpTiCpp
+List WrapKrigSpTiCpp(NumericVector sigma2, NumericVector alpha, NumericVector rho, NumericVector rho_t, NumericVector sep_par, IntegerMatrix k, int n, int nsample, arma::mat H_tot, arma::mat Ht_tot, int nprev, NumericVector x);
+RcppExport SEXP _CircSpaceTime_WrapKrigSpTiCpp(SEXP sigma2SEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP rho_tSEXP, SEXP sep_parSEXP, SEXP kSEXP, SEXP nSEXP, SEXP nsampleSEXP, SEXP H_totSEXP, SEXP Ht_totSEXP, SEXP nprevSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rho_t(rho_tSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sep_par(sep_parSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type nsample(nsampleSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type H_tot(H_totSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Ht_tot(Ht_totSEXP);
+    Rcpp::traits::input_parameter< int >::type nprev(nprevSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(WrapKrigSpTiCpp(sigma2, alpha, rho, rho_t, sep_par, k, n, nsample, H_tot, Ht_tot, nprev, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // WrapSpRcpp_nugget
 List WrapSpRcpp_nugget(int ad_start, int ad_end, double ad_esp, int burnin, int thin, int iter_1, int iter_2, int n_j, NumericVector prior_alpha, NumericVector prior_rho, NumericVector prior_sigma2, NumericVector prior_beta, double sdrho, double sdsigma2, double sdbeta, double alpha, double rho, double sigma2, double beta, IntegerVector k, NumericVector x, arma::mat H, double acceptratio, String corr_fun, double kappa_matern);
 RcppExport SEXP _CircSpaceTime_WrapSpRcpp_nugget(SEXP ad_startSEXP, SEXP ad_endSEXP, SEXP ad_espSEXP, SEXP burninSEXP, SEXP thinSEXP, SEXP iter_1SEXP, SEXP iter_2SEXP, SEXP n_jSEXP, SEXP prior_alphaSEXP, SEXP prior_rhoSEXP, SEXP prior_sigma2SEXP, SEXP prior_betaSEXP, SEXP sdrhoSEXP, SEXP sdsigma2SEXP, SEXP sdbetaSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP sigma2SEXP, SEXP betaSEXP, SEXP kSEXP, SEXP xSEXP, SEXP HSEXP, SEXP acceptratioSEXP, SEXP corr_funSEXP, SEXP kappa_maternSEXP) {
@@ -176,14 +198,53 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// WrapSpTiRcpp
+List WrapSpTiRcpp(int ad_start, int ad_end, double ad_esp, int burnin, int thin, int iter_1, int iter_2, int n_j, NumericVector prior_alpha, NumericVector prior_rho, NumericVector prior_rho_t, NumericVector prior_sep_par, NumericVector prior_sigma2, double sdrho, double sdrho_t, double sdsep_par, double sdsigma2, double alpha, double rho, double rho_t, double sep_par, double sigma2, IntegerVector k, NumericVector x, arma::mat H, arma::mat Ht, double acceptratio);
+RcppExport SEXP _CircSpaceTime_WrapSpTiRcpp(SEXP ad_startSEXP, SEXP ad_endSEXP, SEXP ad_espSEXP, SEXP burninSEXP, SEXP thinSEXP, SEXP iter_1SEXP, SEXP iter_2SEXP, SEXP n_jSEXP, SEXP prior_alphaSEXP, SEXP prior_rhoSEXP, SEXP prior_rho_tSEXP, SEXP prior_sep_parSEXP, SEXP prior_sigma2SEXP, SEXP sdrhoSEXP, SEXP sdrho_tSEXP, SEXP sdsep_parSEXP, SEXP sdsigma2SEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP rho_tSEXP, SEXP sep_parSEXP, SEXP sigma2SEXP, SEXP kSEXP, SEXP xSEXP, SEXP HSEXP, SEXP HtSEXP, SEXP acceptratioSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ad_start(ad_startSEXP);
+    Rcpp::traits::input_parameter< int >::type ad_end(ad_endSEXP);
+    Rcpp::traits::input_parameter< double >::type ad_esp(ad_espSEXP);
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
+    Rcpp::traits::input_parameter< int >::type iter_1(iter_1SEXP);
+    Rcpp::traits::input_parameter< int >::type iter_2(iter_2SEXP);
+    Rcpp::traits::input_parameter< int >::type n_j(n_jSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prior_alpha(prior_alphaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prior_rho(prior_rhoSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prior_rho_t(prior_rho_tSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prior_sep_par(prior_sep_parSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prior_sigma2(prior_sigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type sdrho(sdrhoSEXP);
+    Rcpp::traits::input_parameter< double >::type sdrho_t(sdrho_tSEXP);
+    Rcpp::traits::input_parameter< double >::type sdsep_par(sdsep_parSEXP);
+    Rcpp::traits::input_parameter< double >::type sdsigma2(sdsigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type rho_t(rho_tSEXP);
+    Rcpp::traits::input_parameter< double >::type sep_par(sep_parSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type k(kSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Ht(HtSEXP);
+    Rcpp::traits::input_parameter< double >::type acceptratio(acceptratioSEXP);
+    rcpp_result_gen = Rcpp::wrap(WrapSpTiRcpp(ad_start, ad_end, ad_esp, burnin, thin, iter_1, iter_2, n_j, prior_alpha, prior_rho, prior_rho_t, prior_sep_par, prior_sigma2, sdrho, sdrho_t, sdsep_par, sdsigma2, alpha, rho, rho_t, sep_par, sigma2, k, x, H, Ht, acceptratio));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_CircSpaceTime_ProjKrigCpp", (DL_FUNC) &_CircSpaceTime_ProjKrigCpp, 12},
     {"_CircSpaceTime_ProjSpRcpp", (DL_FUNC) &_CircSpaceTime_ProjSpRcpp, 28},
     {"_CircSpaceTime_WrapKrigCpp_nugget", (DL_FUNC) &_CircSpaceTime_WrapKrigCpp_nugget, 12},
     {"_CircSpaceTime_WrapKrigCpp", (DL_FUNC) &_CircSpaceTime_WrapKrigCpp, 11},
+    {"_CircSpaceTime_WrapKrigSpTiCpp", (DL_FUNC) &_CircSpaceTime_WrapKrigSpTiCpp, 12},
     {"_CircSpaceTime_WrapSpRcpp_nugget", (DL_FUNC) &_CircSpaceTime_WrapSpRcpp_nugget, 25},
     {"_CircSpaceTime_WrapSpRcpp", (DL_FUNC) &_CircSpaceTime_WrapSpRcpp, 22},
+    {"_CircSpaceTime_WrapSpTiRcpp", (DL_FUNC) &_CircSpaceTime_WrapSpTiRcpp, 27},
     {NULL, NULL, 0}
 };
 

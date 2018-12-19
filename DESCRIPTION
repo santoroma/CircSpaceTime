@@ -7,7 +7,7 @@ Authors@R: c(person("Giovanna", "Jona Lasinio", email = "giovanna.jonalasinio@un
           person("Mario", "Santoro", email = "santoro.ma@gmail.com", role = c("aut", "cre")))
 BugReports: https://github.com/santoroma/CircSpaceTime
 Description: This package implements spatial, spatio-temporal and temporal models for circular data. 
-Currently the following models are implemented:
+Currently the following models are implemented: 
     Spatial Wrapped Normal  
     Spatial Projected Normal  
     Yet to come:
@@ -30,5 +30,5 @@ Imports: Rcpp (>= 0.12.14),
         RInside, 
         coda,
         ggplot2
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 VignetteBuilder: knitr

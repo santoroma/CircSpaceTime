@@ -27,15 +27,17 @@ double dmvnrm_arma(arma::vec x,
   return(out);
 }
 // [[Rcpp::export]]
-List ProjSpRcpp(
+List ProjSpTiRcpp(
     int ad_start, int ad_end, double ad_exp,
     int burnin, int thin, int nSamples_save, int n_j, int iter_z,
-    NumericVector prior_tau, NumericVector prior_sigma2, NumericVector prior_rho,
+    NumericVector prior_tau, NumericVector prior_sigma2, NumericVector prior_rho_sp,
     arma::mat prior_alpha_sigma, arma::vec prior_alpha_mu,
-    double sdtau, double sdsigma2, double sdrho, arma::vec sdr,
-    double tau, double sigma2, double rho, arma::vec alpha,NumericVector r,
+    NumericVector prior_rho_t, NumericVector prior_sep_par,
+    double sdtau, double sdsigma2, double sdrho_sp, arma::vec sdr,
+    double sdrho_t, double  sdsep_par,
+    double tau, double sigma2, double rho_sp, arma::vec alpha,NumericVector r,  double rho_t, double sep_par,
     NumericVector x,
-    arma::mat H, double acceptratio,
+    arma::mat H,arma::mat Ht, double acceptratio,
     String corr_fun, double kappa_matern
 ){
   
@@ -94,38 +96,14 @@ arma::vec yMalpha(2*n_j);
   // spatial covariance matrix
   arma::mat Cor_invSp(n_j,n_j);  
   double sign;
-  if(corr_fun == "exponential"){
-    for(i=0;i<n_j;i++)
-    {
-      for(h=0;h<n_j;h++)
-      {
-        Cor_invSp(h,i) = exp(-rho*H(h,i));
-      }
-    }
-  }
-  else if(corr_fun == "matern")
+  for(i=0;i<n_j;i++)
   {
-    for(i=0;i<n_j;i++)
+    for(h=0;h<n_j;h++)
     {
-      for(h=0;h<n_j;h++)
-      {
-        if(rho*H(h,i) > 0.0){
-          Cor_invSp(h,i) =  pow(rho*H(h,i),kappa_matern)/(pow(2,kappa_matern-1.)*R::gammafn(kappa_matern))*R::bessel_k(rho*H(h,i),kappa_matern,1.0);
-        } else {
-          Cor_invSp(h,i) = 1.0;
-        }
-      }
-    }
-  } else if(corr_fun == "gaussian"){
-    for(i=0;i<n_j;i++)
-    {
-      for(h=0;h<n_j;h++)
-      {
-        Cor_invSp(h,i) = exp(-pow(rho*H(h,i),2));
-      }
+      double ttt = (rho_t * pow(Ht(h,i),2) +1.);
+      Cor_invSp(h,i) = 1.0/ttt * exp(-rho_sp*H(h,i)/pow(ttt,sep_par/2.));
     }
   }
-
 
   // Covariance matrix bivariate latent variable
   arma::mat Xi(2,2);
@@ -164,35 +142,36 @@ arma::vec yMalpha(2*n_j);
   *****************************************/
 
   // proposed values 
-  double rho_p;
+  double rho_sp_p;
   double sigma2_p;
   double tau_p;
+  double rho_t_p;
+  double sep_par_p;
 
   // proposed and accepted values in the transformed scale
-  arma::vec sim_sp_p(3);
-  arma::vec sim_sp(3);
+  arma::vec sim_sp_p(5);
+  arma::vec sim_sp(5);
 
   sim_sp[0] = log(sigma2);
-  sim_sp[1] = log((rho - prior_rho[0])/(prior_rho[1] - rho));
+  sim_sp[1] = log((rho_sp - prior_rho_sp[0])/(prior_rho_sp[1] - rho_sp));
   sim_sp[2] = log((tau - prior_tau[0])/(prior_tau[1] - tau));
-
+  sim_sp[3] = log((rho_t - prior_rho_t[0])/(prior_rho_t[1] - rho_t));
+  sim_sp[4] = log((sep_par )/(1.0- sep_par));
   // Covariance matrix of the multivariate normal proposal
-  arma::mat Mat_ad_sp(3,3);
+  arma::mat Mat_ad_sp(5,5,arma::fill::zeros);
   Mat_ad_sp(0,0) = sdsigma2;
-  Mat_ad_sp(0,1) = 0.0;
-  Mat_ad_sp(0,2) = 0.0;
-  Mat_ad_sp(1,0) = 0.0;
-  Mat_ad_sp(1,1) = sdrho;
-  Mat_ad_sp(1,2) = 0.0;;
-  Mat_ad_sp(2,0) = 0.0;
-  Mat_ad_sp(2,1) = 0.0;
+  Mat_ad_sp(1,1) = sdrho_sp;
   Mat_ad_sp(2,2) = sdtau;
+  Mat_ad_sp(3,3) = sdrho_t;
+  Mat_ad_sp(4,4) = sdsep_par;
 
   // mean vector of the multivariate normal proposal
-  NumericVector mean_sp(3);
-  mean_sp[0] = sim_sp[0] + R::rnorm(0.0,0.1);
-  mean_sp[1] = sim_sp[1] + R::rnorm(0.0,0.1);
-  mean_sp[2] = sim_sp[2] + R::rnorm(0.0,0.1); 
+  NumericVector mean_sp(5);
+  mean_sp[0] = sim_sp[0] + R::rnorm(0.0,sdsigma2);
+  mean_sp[1] = sim_sp[1] + R::rnorm(0.0,sdrho_sp);
+  mean_sp[2] = sim_sp[2] + R::rnorm(0.0,sdtau); 
+  mean_sp[3] = sim_sp[3] + R::rnorm(0.0,sdrho_t); 
+  mean_sp[4] = sim_sp[4] + R::rnorm(0.0,sdsep_par); 
 
   //  Value to be added to the diagonal of Mat_ad_sp
   double eps              = 0.0001;
@@ -203,17 +182,19 @@ arma::vec yMalpha(2*n_j);
 
   // Other variables needed
 
-  arma::mat app_Mat_ad_sp(3,3);
-  NumericVector app_mean_sp(3);  
+  arma::mat app_Mat_ad_sp(5,5);
+  NumericVector app_mean_sp(5);  
   
   /*****************************************
   Metropolis update of spatial parameters
   *****************************************/
 
   // prior densities of the proposed and accepted  values 
-  double Prho, Prho_p;
+  double Prho_sp, Prho_sp_p;
   double Psigma2, Psigma2_p;
   double Ptau, Ptau_p;
+  double Prho_t, Prho_t_p;
+  double Psep_par, Psep_par_p;
 
   // proposed correlation matrix, Matrix Xi and log-determinants
   arma::mat Cor_invSp_p(n_j,n_j);
@@ -251,8 +232,11 @@ arma::vec yMalpha(2*n_j);
   *****************************************/
 
   NumericVector sigma2_out_add(nSamples_save);
-  NumericVector rho_out_add(nSamples_save);
+  NumericVector rho_sp_out_add(nSamples_save);
   NumericVector tau_out_add(nSamples_save);
+  NumericVector rho_t_out_add(nSamples_save);
+  NumericVector sep_par_out_add(nSamples_save);
+
   arma::mat alpha_out_add(2,nSamples_save);
   arma::mat r_out_add(n_j,nSamples_save);
   
@@ -293,22 +277,22 @@ arma::vec yMalpha(2*n_j);
       ******************/
 
      // Proposed values from the multivariate normal proposal
+      app_Mat_ad_sp = Mat_ad_sp;
       app_Mat_ad_sp(0,0) = Mat_ad_sp(0,0)+eps;
-      app_Mat_ad_sp(1,0) = Mat_ad_sp(1,0);
-      app_Mat_ad_sp(2,0) = Mat_ad_sp(2,0);
-      app_Mat_ad_sp(0,1) = Mat_ad_sp(0,1);
       app_Mat_ad_sp(1,1) = Mat_ad_sp(1,1)+eps;
-      app_Mat_ad_sp(2,1) = Mat_ad_sp(2,1);
-      app_Mat_ad_sp(0,2) = Mat_ad_sp(0,2);
-      app_Mat_ad_sp(1,2) = Mat_ad_sp(1,2);
       app_Mat_ad_sp(2,2) = Mat_ad_sp(2,2)+eps;
+      app_Mat_ad_sp(3,3) = Mat_ad_sp(3,3)+eps;
+      app_Mat_ad_sp(4,4) = Mat_ad_sp(4,4)+eps;
+      
       app_Mat_ad_sp = arma::chol(app_Mat_ad_sp)*pow(lambda_adapt_sp,0.5);
 
       sim_sp[0] = log(sigma2);
-      sim_sp[1] = log((rho - prior_rho[0])/(prior_rho[1] - rho));
+      sim_sp[1] = log((rho_sp - prior_rho_sp[0])/(prior_rho_sp[1] - rho_sp));
       sim_sp[2] = log((tau - prior_tau[0])/(prior_tau[1] - tau));
+      sim_sp[3] = log((rho_t - prior_rho_t[0])/(prior_rho_t[1] - rho_t));
+      sim_sp[4] = log((sep_par)/(1.0 - sep_par));
 
-      for(i=0;i<3;i++)
+      for(i=0;i<5;i++)
       {
         sim_sp_p[i] = R::rnorm(0.0,1.0);
       }
@@ -317,38 +301,21 @@ arma::vec yMalpha(2*n_j);
       sim_sp_p = sim_sp + sim_sp_p;
 
       sigma2_p = exp(sim_sp_p[0]);
-      rho_p  =  (exp(sim_sp_p[1]) * prior_rho[1] + prior_rho[0]) / (1.0 + exp(sim_sp_p[1]));
+      rho_sp_p  =  (exp(sim_sp_p[1]) * prior_rho_sp[1] + prior_rho_sp[0]) / (1.0 + exp(sim_sp_p[1]));
       tau_p  =  (exp(sim_sp_p[2]) * prior_tau[1] + prior_tau[0]) / (1.0 + exp(sim_sp_p[2]));
+      rho_t_p  =  (exp(sim_sp_p[3]) * prior_rho_t[1] + prior_rho_t[0]) / (1.0 + exp(sim_sp_p[3]));
+      sep_par_p = exp(sim_sp_p[4])/(1.0 + exp(sim_sp_p[4]));
 
       // Proposed correlation matrix, matrix Xi and log-determinants
-      if(corr_fun == "exponential"){
-        for(i=0;i<n_j;i++)
-        {
-          for(h=0;h<n_j;h++)
-          {
-            Cor_invSp_p(h,i) = exp(-rho_p*H(h,i));
-          }
-        }
-      }
-      else if(corr_fun == "matern")
+      for(i=0;i<n_j;i++)
       {
-        for(i=0;i<n_j;i++)
+        for(h=0;h<n_j;h++)
         {
-          for(h=0;h<n_j;h++)
-          {
-            Cor_invSp_p(h,i) =  pow(rho_p*H(h,i),kappa_matern)/(pow(2,kappa_matern-1.)*R::gammafn(kappa_matern))*R::bessel_k(rho_p*H(h,i),kappa_matern,1.0);
-          }
-          Cor_invSp_p(i,i) = 1.0;
-        }
-      } else if(corr_fun == "gaussian"){
-        for(i=0;i<n_j;i++)
-        {
-          for(h=0;h<n_j;h++)
-          {
-            Cor_invSp_p(h,i) = exp(-pow(rho_p*H(h,i),2));
-          }
+          double ttt = (rho_t_p * pow(Ht(h,i),2) +1.);
+          Cor_invSp_p(h,i) = 1.0/ttt * exp(-rho_sp_p*H(h,i)/pow(ttt,sep_par_p/2.));
         }
       }
+      
 
       Xi_p(0,0) = sigma2_p;
       Xi_p(0,1) = sqrt(sigma2_p)*tau_p;
@@ -367,13 +334,22 @@ arma::vec yMalpha(2*n_j);
       Psigma2 = -1.0*(prior_sigma2[0]+1)*log(sigma2 )-prior_sigma2[1]/sigma2 +log(sigma2 );
       Psigma2_p = -1.0*(prior_sigma2[0]+1)*log(sigma2_p)-prior_sigma2[1]/sigma2_p+log(sigma2_p);
 
-      // uniform distribution for rho between prior_rho[0] and prior_rho[1]
-      Prho        = sim_sp[1]-2.0*log(1.0+exp(sim_sp[1]));
-      Prho_p      = sim_sp_p[1]-2.0*log(1.0+exp(sim_sp_p[1]));
+      // uniform distribution for rho_sp between prior_rho_sp[0] and prior_rho_sp[1]
+      Prho_sp        = sim_sp[1]-2.0*log(1.0+exp(sim_sp[1]));
+      Prho_sp_p      = sim_sp_p[1]-2.0*log(1.0+exp(sim_sp_p[1]));
 
       // uniform distribution for tau between prior_tau[0] and prior_tau[1]
       Ptau        = sim_sp[2]-2.0*log(1.0+exp(sim_sp[2]));
       Ptau_p      = sim_sp_p[2]-2.0*log(1.0+exp(sim_sp_p[2]));
+
+      // uniform distribution for rho_t between prior_rho_t[0] and prior_rho_t[1]
+      Prho_t        = sim_sp[3]-2.0*log(1.0+exp(sim_sp[3]));
+      Prho_t_p      = sim_sp_p[3]-2.0*log(1.0+exp(sim_sp_p[3]));
+
+      // beta distribution for sep_par with parameters prior_sep_par[0] and prior_sep_par[1]
+      Psep_par    = (prior_sep_par[0]-1.0)*log(sep_par)+(prior_sep_par[1]-1.0)*log(1.0-sep_par)+sim_sp[4]-2.0*log(1.0+exp(sim_sp[4]));
+      Psep_par_p  = (prior_sep_par[0]-1.0)*log(sep_par_p)+(prior_sep_par[1]-1.0)*log(1.0-sep_par_p)+sim_sp_p[4]-2.0*log(1.0+exp(sim_sp_p[4]));
+
 
       app_logMH_D = Cor_inv*yMalpha;
       app_logMH_N = Cor_inv_p*yMalpha;
@@ -381,16 +357,21 @@ arma::vec yMalpha(2*n_j);
       logMH_N = -0.5*arma::dot(app_logMH_N, yMalpha)-0.5*logdet_cor_p;
 
       // Metropolis ratio
-      MH_ratio = std::min(1.0,exp( logMH_N+Psigma2_p+ Prho_p + Ptau_p- (logMH_D+Psigma2+ Prho +Ptau) ));
+      MH_ratio = std::min(1.0,exp( logMH_N+Psigma2_p+ Prho_sp_p + Ptau_p + Prho_t_p+ Psep_par_p- (logMH_D+Psigma2+ Prho_sp +Ptau+ Prho_t+ Psep_par) ));
       if(R::runif(0.0,1.0)< MH_ratio)
       {
         sim_sp[0] = sim_sp_p[0];
         sim_sp[1] = sim_sp_p[1];
         sim_sp[2] = sim_sp_p[2];
+        sim_sp[3] = sim_sp_p[3];
+        sim_sp[4] = sim_sp_p[4];
 
         sigma2  = sigma2_p;
-        rho  = rho_p;
+        rho_sp  = rho_sp_p;
         tau  = tau_p;
+        rho_t  = rho_t_p;
+        sep_par  = sep_par_p;
+
         logdet_cor = logdet_cor_p;
         Cor_invSp = Cor_invSp_p;
         Xi = Xi_p;
@@ -482,10 +463,11 @@ arma::vec yMalpha(2*n_j);
     {
         alpha_out_add(i,iMCMC2) = alpha[i];
     }
-    rho_out_add[iMCMC2] = rho;
+    rho_sp_out_add[iMCMC2] = rho_sp;
     tau_out_add[iMCMC2] = tau;
     sigma2_out_add[iMCMC2] = sigma2;
-
+    rho_t_out_add[iMCMC2] = rho_t;
+    sep_par_out_add[iMCMC2] = sep_par;
     for(i=0;i<n_j;i++)
     {
       r_out_add(i,iMCMC2) = r[i];
@@ -498,21 +480,13 @@ arma::vec yMalpha(2*n_j);
 
   PutRNGstate();
 
-  if(corr_fun == "matern"){
-    return List::create(Named("r") = r_out_add,
+  return List::create(Named("r") = r_out_add,
                         Named("alpha") = alpha_out_add,
                         Named("sigma2") = sigma2_out_add,
-                        Named("rho") = rho_out_add,
+                        Named("rho_sp") = rho_sp_out_add,
                         Named("tau") = tau_out_add,
-                        Named("corr_fun") = corr_fun,
-                        Named("kappa_matern") = kappa_matern);
-  } else {
-    return List::create(Named("r") = r_out_add,
-                        Named("alpha") = alpha_out_add,
-                        Named("sigma2") = sigma2_out_add,
-                        Named("rho") = rho_out_add,
-                        Named("tau") = tau_out_add,
+                        Named("rho_t") = rho_t_out_add,
+                        Named("sep_par") = sep_par_out_add,
                         Named("corr_fun") = corr_fun);
-    }
   }
 

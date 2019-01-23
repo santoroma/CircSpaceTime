@@ -1,9 +1,9 @@
 #' Kriging using wrapped normal model.
 #'
-#' \code{WrapKrigSpTi} function computes the Kriging prediction for circular spatial data
+#' \code{WrapKrigSp} function computes the Kriging prediction for circular spatial data
 #' as proposed in G Jona-Lasinio, A Gelfand, M Jona-Lasinio Spatial analysis of wave direction data using wrapped gaussian processes - The Annals of Applied Statistics, 2012,V. 6, 4,  pp1478-1498
 #'
-#' @param WrapSpTi_out the functions takes the output of \code{WrapSpTi} function
+#' @param WrapSp_out the functions takes the output of \code{WrapSp} function
 #' @param coords_obs coordinates of observed locations (in UTM)
 #' @param coords_nobs coordinates of unobserved locations (in UTM)
 #' @param x_obs observed values
@@ -39,11 +39,11 @@
 #' coords.test=coords2[sample.val,]
 #' distance_matrix=dist(coords2)
 #' ### Now we build the information for the priors
-#' rho_sp_max = 3./min(distance_matrix[which(distance_matrix > 0)])
-#' rho_sp_min = 3./max(distance_matrix[which(distance_matrix > 0)])
+#' rho_max = 3./min(distance_matrix[which(distance_matrix > 0)])
+#' rho_min = 3./max(distance_matrix[which(distance_matrix > 0)])
 #' Now run the posterior estimation see \\code{\link{WrapSp}} for details
 #' start1=list("alpha"      = c(2*pi,3.14),
-#'	 "rho_sp"     = c(.5*(rho_sp_min + rho_sp_max),.1*(rho_sp_min + rho_sp_max)),
+#'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
 #'	 "sigma2"    = c(1,0.1),
 #'	 "beta"     = c(.3,0.01),
 #'	 "k"       = rep(0, nrow(train)))
@@ -53,12 +53,12 @@
 #' coords    = coords.train,
 #' start   = start1 ,
 #' prior   = list("alpha"      = c(pi,10), # N
-#' "rho_sp"     = c(rho_sp_min, rho_sp_max), #c(1.3,100), # G
+#' "rho"     = c(rho_min, rho_max), #c(1.3,100), # G
 #' "sigma2"    = c(3,0.5),
 #' "beta"      = c(1,1,2)  # nugget prior
 #' ) ,
 #' nugget = TRUE,
-#' sd_prop   = list( "sigma2" = 1, "rho_sp" = 0.3, "beta" = 1),
+#' sd_prop   = list( "sigma2" = 1, "rho" = 0.3, "beta" = 1),
 #' iter    = 30000,
 #'  bigSim    = c(burnin = 15000, thin = 10),
 #' accept_ratio = 0.5,
@@ -78,31 +78,42 @@
 #' x_obs = train$Dmr
 #' )
 #' @export
-WrapKrigSpTi = function(
-  WrapSpTi_out,
+WrapKrigSp = function(
+  WrapSp_out,
   coords_obs,
   coords_nobs,
-  times_obs,
-  times_nobs,
   x_obs
 )
 {
 
   ## ## ## ## ## ## ##
+  ##  Correlation function
+  ## ## ## ## ## ## ## 
+  corr_fun      = WrapSp_out[[1]]$corr_fun
+  kappa_matern  = 0
+  
+  if (corr_fun == "matern") {
+    kappa_matern = WrapSp_out[[1]]$kappa_matern
+  }
+
+  ## ## ## ## ## ## ##
   ##  Posterior samples
   ## ## ## ## ## ## ## 
 
-  pp      = unlist(WrapSpTi_out)
+  pp      = unlist(WrapSp_out)
+  if (corr_fun == "matern")
+  {
+    W   = which(regexpr("kappa_matern",names(pp)) == 1)
+    pp  = pp[-W]
+  }
+  
   sigma2  = as.numeric(pp[regexpr("sigma2",names(pp)) == 1])
   alpha		= as.numeric(pp[regexpr("alpha",names(pp)) == 1])
-  rho_sp     = as.numeric(pp[regexpr("rho_sp",names(pp)) == 1])
-  rho_t   = as.numeric(pp[regexpr("rho_t",names(pp)) == 1])
-  sep_par = as.numeric(pp[regexpr("sep_par",names(pp)) == 1])
-  row.k   = nrow(WrapSpTi_out[[1]]$k)
+  rho     = as.numeric(pp[regexpr("rho",names(pp)) == 1])
+  row.k   = nrow(WrapSp_out[[1]]$k)
   pp2     = as.numeric(pp[regexpr("k",names(pp)) == 1])
   k       = matrix(pp2,nrow = row.k)
   rm(pp,pp2)
-
   ## ## ## ## ## ## ##
   ##  Observations are centerer around pi, and the posterior values of
   ##  alpha are changed accordingly.
@@ -112,27 +123,26 @@ WrapKrigSpTi = function(
   x_obs     = (x_obs - MeanCirc + pi) %% (2*pi)
   alpha		= (alpha + MeanCirc - pi) %% (2*pi)
 
+
+
   ## ## ## ## ## ## ##
   ##  Indices
   ## ## ## ## ## ## ## 
-
-  n	= nrow(k)
-  nprev	= nrow(coords_nobs)
-  nsample	= ncol(k)
+  n	        = nrow(k)
+  nprev	    = nrow(coords_nobs)
+  nsample	  = ncol(k)
 
   ## ## ## ## ## ## ##
   ##  Distance matrix for observed and non observed data
   ## ## ## ## ## ## ## 
 
   H_tot	= as.matrix(stats::dist(rbind(coords_obs,coords_nobs)))
-  Ht_tot = as.matrix(stats::dist(c(times_obs,times_nobs)))
 
   ## ## ## ## ## ## ##
   ##  Model estimation
   ## ## ## ## ## ## ## 
-  
-  out = WrapKrigSpTiCpp(sigma2,	alpha, rho_sp, rho_t,sep_par, k,
-                         n, nsample,	H_tot, Ht_tot, nprev, x_obs)
+
+  out = WrapKrigSpCpp(sigma2,	alpha, rho, k, n, nsample,	H_tot,nprev, x_obs, corr_fun, kappa_matern)
 
   ## ## ## ## ## ## ##
   ## Posterior samples of x and posterior mean are changed back to

@@ -3,29 +3,11 @@
 #include "help_fun.h"
 using namespace Rcpp;
 #define _USE_MATH_DEFINES
- 
+
 
 
 const double log2pi = std::log(2.0 * M_PI);
-// Multivariate normal density
-double dmvnrm_arma(arma::vec x,
-                      arma::vec mean,
-                      arma::mat sigma,
-                      bool logd = false) {
-
-  int xdim = x.n_elem;
-  double out;
-  arma::mat rooti = arma::trans(arma::inv(trimatu(arma::chol(sigma))));
-  double rootisum = arma::sum(log(rooti.diag()));
-  double constants = -(static_cast<double>(xdim)/2.0) * log2pi;
-
-    arma::vec z = rooti * ( x - mean) ;
-    out      = constants - 0.5 * arma::sum(z%z) + rootisum;
-  if (logd == false) {
-    out = exp(out);
-  }
-  return(out);
-}
+// Multivariate normal density already defined in ProjSp.cpp
 // [[Rcpp::export]]
 List ProjSpTiRcpp(
     int ad_start, int ad_end, double ad_exp,
@@ -40,7 +22,7 @@ List ProjSpTiRcpp(
     arma::mat H,arma::mat Ht, double acceptratio,
     String corr_fun, double kappa_matern
 ){
-  
+
   GetRNGstate();
   /*****************************************
   General indices and variables
@@ -94,7 +76,7 @@ arma::vec yMalpha(2*n_j);
   *****************************************/
 
   // spatial covariance matrix
-  arma::mat Cor_invSp(n_j,n_j);  
+  arma::mat Cor_invSp(n_j,n_j);
   double sign;
   for(i=0;i<n_j;i++)
   {
@@ -141,7 +123,7 @@ arma::vec yMalpha(2*n_j);
   Adapt variables for the covariance parameters update
   *****************************************/
 
-  // proposed values 
+  // proposed values
   double rho_sp_p;
   double sigma2_p;
   double tau_p;
@@ -169,9 +151,9 @@ arma::vec yMalpha(2*n_j);
   NumericVector mean_sp(5);
   mean_sp[0] = sim_sp[0] + R::rnorm(0.0,sdsigma2);
   mean_sp[1] = sim_sp[1] + R::rnorm(0.0,sdrho_sp);
-  mean_sp[2] = sim_sp[2] + R::rnorm(0.0,sdtau); 
-  mean_sp[3] = sim_sp[3] + R::rnorm(0.0,sdrho_t); 
-  mean_sp[4] = sim_sp[4] + R::rnorm(0.0,sdsep_par); 
+  mean_sp[2] = sim_sp[2] + R::rnorm(0.0,sdtau);
+  mean_sp[3] = sim_sp[3] + R::rnorm(0.0,sdrho_t);
+  mean_sp[4] = sim_sp[4] + R::rnorm(0.0,sdsep_par);
 
   //  Value to be added to the diagonal of Mat_ad_sp
   double eps              = 0.0001;
@@ -183,13 +165,13 @@ arma::vec yMalpha(2*n_j);
   // Other variables needed
 
   arma::mat app_Mat_ad_sp(5,5);
-  NumericVector app_mean_sp(5);  
-  
+  NumericVector app_mean_sp(5);
+
   /*****************************************
   Metropolis update of spatial parameters
   *****************************************/
 
-  // prior densities of the proposed and accepted  values 
+  // prior densities of the proposed and accepted  values
   double Prho_sp, Prho_sp_p;
   double Psigma2, Psigma2_p;
   double Ptau, Ptau_p;
@@ -239,7 +221,7 @@ arma::vec yMalpha(2*n_j);
 
   arma::mat alpha_out_add(2,nSamples_save);
   arma::mat r_out_add(n_j,nSamples_save);
-  
+
   /*****************************************
   MCMC iterations
   *****************************************/
@@ -256,7 +238,7 @@ arma::vec yMalpha(2*n_j);
         molt = 1/(pow(Iterations+1-ad_start,ad_exp));
       }
       R_CheckUserInterrupt();
-      
+
       /****************
       Sample Gaussian Mean
       ******************/
@@ -283,7 +265,7 @@ arma::vec yMalpha(2*n_j);
       app_Mat_ad_sp(2,2) = Mat_ad_sp(2,2)+eps;
       app_Mat_ad_sp(3,3) = Mat_ad_sp(3,3)+eps;
       app_Mat_ad_sp(4,4) = Mat_ad_sp(4,4)+eps;
-      
+
       app_Mat_ad_sp = arma::chol(app_Mat_ad_sp)*pow(lambda_adapt_sp,0.5);
 
       sim_sp[0] = log(sigma2);
@@ -315,7 +297,7 @@ arma::vec yMalpha(2*n_j);
           Cor_invSp_p(h,i) = 1.0/ttt * exp(-rho_sp_p*H(h,i)/pow(ttt,sep_par_p/2.));
         }
       }
-      
+
 
       Xi_p(0,0) = sigma2_p;
       Xi_p(0,1) = sqrt(sigma2_p)*tau_p;
@@ -397,7 +379,7 @@ arma::vec yMalpha(2*n_j);
       /****************
       Sample r
       ******************/
-     
+
       for(ii=0; ii<n_j; ii++){
         y_p[2*ii]   = y[2*ii] ;
         y_p[2*ii+1] = y[2*ii+1];
@@ -416,12 +398,12 @@ arma::vec yMalpha(2*n_j);
         yMalpha_p(2*i+1) = y_p[2*i+1]-alpha[1];
 
 
-        // Metropolis ratio          
+        // Metropolis ratio
         app_logMH_D = Cor_inv*yMalpha;
         app_logMH_N = Cor_inv*yMalpha_p;
         logMH_D = -0.5*arma::dot(app_logMH_D,yMalpha);
         logMH_N = -0.5*arma::dot(app_logMH_N, yMalpha_p);
-        
+
         temp[0] = 0.;
         temp[1] = logMH_N  - logMH_D  + 2*log(r_p[i]) - 2*log(r[i]);
         r_MH[i] = arma::min(temp);
@@ -454,7 +436,7 @@ arma::vec yMalpha(2*n_j);
           r_MH_sum[i] = 0;
         }
       }  /*** End "for" cycle  ***/
-   
+
     // change burnin to thin
     BurninOrThin = thin;
 

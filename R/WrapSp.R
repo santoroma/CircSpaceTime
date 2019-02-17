@@ -185,6 +185,7 @@ WrapSp  = function(
 
   H						=	as.matrix(stats::dist(coords))
   corr_fun    = corr_fun
+  kappa_matern = kappa_matern
   corr_fun_list = c("exponential", "matern" ,"gaussian")
   if (!corr_fun %in% corr_fun_list) {
     error_msg = paste("You should use one of these correlation functions: ",paste(corr_fun_list,collapse = "\n"),sep = "\n")
@@ -212,7 +213,7 @@ WrapSp  = function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl = makeCluster(n_cores)
       registerDoParallel(cl)
-      out = foreach(i = 1:n_chains, .export =environment()) %dopar% {
+      out = foreach(i = 1:n_chains) %dopar% {
         out_temp = WrapSpRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin,nSamples_save,
                               n_j,

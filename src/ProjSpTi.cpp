@@ -19,8 +19,7 @@ List ProjSpTiRcpp(
     double sdrho_t, double  sdsep_par,
     double tau, double sigma2, double rho_sp, arma::vec alpha,NumericVector r,  double rho_t, double sep_par,
     NumericVector x,
-    arma::mat H,arma::mat Ht, double acceptratio,
-    String corr_fun, double kappa_matern
+    arma::mat H,arma::mat Ht, double acceptratio
 ){
 
   GetRNGstate();
@@ -468,7 +467,6 @@ arma::vec yMalpha(2*n_j);
                         Named("rho_sp") = rho_sp_out_add,
                         Named("tau") = tau_out_add,
                         Named("rho_t") = rho_t_out_add,
-                        Named("sep_par") = sep_par_out_add,
-                        Named("corr_fun") = corr_fun);
+                        Named("sep_par") = sep_par_out_add);
   }
 

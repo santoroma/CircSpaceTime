@@ -126,7 +126,6 @@ ProjSpTi  <- function(
   BurninThin    = c(burnin = 20, thin = 10),
   accept_ratio = 0.234,
   adapt_param = c(start = 1, end = 10000000, exp = 0.9, sdr_update_iter = 50),
-  corr_fun = "exponential", kappa_matern = .5,
   n_chains = 2, parallel = FALSE, n_cores = 2)
 {
 
@@ -216,7 +215,7 @@ ProjSpTi  <- function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      out <- foreach(i = 1:n_chains, .export =environment()) %dopar% {
+      out <- foreach(i = 1:n_chains) %dopar% {
         out_temp = ProjSpTiRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,

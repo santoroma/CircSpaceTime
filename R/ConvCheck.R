@@ -3,13 +3,12 @@
 #' \code{ConvCheck} returns an mcmc.list (mcmc) to be used with the \code{coda} package
 #' and the Potential scale reduction factors (Rhat) of the model parameters computed using the \code{gelman.diag} function in the coda package
 #'
-#' @param mod is a list with \eqn{m\ge 1} elements, one for each chain generated using  \code{\link{WrapSp}} or \code{\link{ProjSp}}
-#' @param character, "Wrap" or "Proj"
+#' @param mod is a list with \eqn{m\ge 1} elements, one for each chain generated using  \code{\link{WrapSp}}, \code{\link{ProjSp}}, \code{\link{WrapSpTi}} or \code{\link{ProjSpTi}}
 #' @param startit  is an integer, the iteration at which the chains start (required to build the mcmc.list)
 #' @param thin  is an integer the thinning applied to chains
 #' @return a list of two elements,
-#' @return mcmc an \code{mcmc.list} (mcmc) to be used with the \code{coda} package
-#' @return Rhat  the Potential scale reduction factors  of the model parameters computed using the \code{gelman.diag} function in the \code{coda} package
+#' @return mcmc, an \code{mcmc.list} (mcmc) to be used with the \code{coda} package
+#' @return Rhat,  the Potential scale reduction factors  of the model parameters computed using the \code{gelman.diag} function in the \code{coda} package
 #' @examples
 #' data(april)
 #' attach(april)
@@ -39,23 +38,20 @@
 #' rho_max <- 3./min(distance_matrix[which(distance_matrix > 0)])
 #' rho_min <- 3./max(distance_matrix[which(distance_matrix > 0)])
 #' Now run the posterior estimation see WrapSp for details
-#' start1=list("alpha"      = c(2*pi,3.14),
+#' start1 <- list("alpha"      = c(2*pi,3.14),
 #'	 "rho"     = c(.5*(rho_min + rho_max),.1*(rho_min + rho_max)),
 #'	 "sigma2"    = c(1,0.1),
-#'	 "beta"     = c(.3,0.01),
 #'	 "k"       = rep(0, nrow(train)))
 #'    # Running WrapSp may take some time
-#' mod = WrapSp(
+#' mod <- WrapSp(
 #' x     = train$Dmr,
 #' coords    = coords.train,
 #' start   = start1 ,
 #' prior   = list("alpha"      = c(pi,10), # N
 #' "rho"     = c(rho_min, rho_max), #c(1.3,100), # G
-#' "sigma2"    = c(3,0.5),
-#' "beta"      = c(1,1,2)  # nugget prior
+#' "sigma2"    = c(3,0.5)
 #' ) ,
-#' nugget = TRUE,
-#' sd_prop   = list( "sigma2" = 1, "rho" = 0.3, "beta" = 1),
+#' sd_prop   = list( "sigma2" = 1, "rho" = 0.3),
 #' iter    = 30000,
 #'  bigSim    = c(burnin = 15000, thin = 10),
 #' accept_ratio = 0.5,
@@ -73,36 +69,19 @@
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' @export
 
-ConvCheck <- function(mod, dist, startit = 15000, thin = 10)
+ConvCheck <- function(mod, startit = 15000, thin = 10)
   {
 #
   n <- length(mod)
   m1 <- list(n)
-  if (dist == "Wrap") {
+  parameters <- which(!(names(mod[[1]]) %in% c("k","corr_fun", "distribution")))
     for (i in 1:n) {
-  	  m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
-  	                      beta = mod[[i]]$beta,
-  	                      rho = mod[[i]]$rho,
-  	                      sigma2 = mod[[i]]$sigma2)
+  	  m1[[i]] <- data.frame(mod[[i]][parameters])
       m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
     }
     m1 <- coda::mcmc.list(m1)
     rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
                           autoburnin = TRUE)
     return(list(Rhat = rb, mcmc = m1))
-  }
-  if (dist == "Proj") {
-    for (i in 1:n) {
-      m1[[i]] <- data.frame(alpha = mod[[i]]$alpha,
-                            rho0 = mod[[i]]$rho0,
-                            rho = mod[[i]]$rho,
-                            sigma2 = mod[[i]]$sigma2)
-      m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
-    }
-    m1 <- coda::mcmc.list(m1)
-    rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
-                            autoburnin = TRUE)
-    return(list(Rhat = rb, mcmc = m1))
-  }
 }
 

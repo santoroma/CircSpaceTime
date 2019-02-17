@@ -7,7 +7,7 @@
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
 #' \item 	alpha the 2-d vector of the means of the Gaussian bi-variate distribution,
-#' \item  tau the correlation of the two components of the linear representation, 
+#' \item  tau the correlation of the two components of the linear representation,
 #' \item  rho the spatial decay parameter,
 #' \item sigma2 the process variance,
 #' \item r the vector of \code{length(x)},  latent variable
@@ -31,7 +31,7 @@
 #' @param parallel logical, if the multiplechains  must be lunched in parallel
 #' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
 #'@return it returns a list of \code{n_chains} lists each with elements
-#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen 
+#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
 #' @examples
 #' data(april)
 #' attach(april)
@@ -126,7 +126,7 @@ ProjSp  <- function(
   ## ## ## ## ## ## ##
   ## Number of observations
   ## ## ## ## ## ## ##
-  
+
   n_j						  =	length(x)
 
   ## ## ## ## ## ## ##
@@ -166,7 +166,7 @@ ProjSp  <- function(
 
   ## ## ## ## ## ## ##
   ##  Starting values
-  ## ## ## ## ## ## ##  
+  ## ## ## ## ## ## ##
 
   start_alpha				=	start[["alpha"]]
   if (length(start_alpha) != 2*n_chains) {stop(paste('start[["alpha"]] length should be equal to 2*n_chains (',
@@ -184,10 +184,10 @@ ProjSp  <- function(
 
   ## ## ## ## ## ## ##
   ##  Correlation function and distance matrix
-  ## ## ## ## ## ## ##  
+  ## ## ## ## ## ## ##
 
   H						=	as.matrix(stats::dist(coords))
-  
+
   corr_fun = corr_fun
   corr_fun_list <- c("exponential", "matern" ,"gaussian")
   if (!corr_fun %in% corr_fun_list) {
@@ -199,7 +199,7 @@ ProjSp  <- function(
 
   ## ## ## ## ## ## ##
   ##  Model estimation
-  ## ## ## ## ## ## ## 
+  ## ## ## ## ## ## ##
 
     if (parallel) {
       ccc <- try(library(doParallel))
@@ -207,7 +207,7 @@ ProjSp  <- function(
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
       out <- foreach(i = 1:n_chains) %dopar% {
-        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
+        out_temp = ProjSpRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,
                                      priors_tau,priors_sigma2,priors_rho, priors_alpha_sigma, priors_alpha_mu,
@@ -215,6 +215,7 @@ ProjSp  <- function(
                                      start_tau[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
                                      x,H, acceptratio,
                                      corr_fun, kappa_matern)
+        out_temp$distribution = "ProjSp"
         out_temp
       }
       stopCluster(cl)
@@ -229,7 +230,7 @@ ProjSp  <- function(
                             start_tau[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
                             x,H, acceptratio,
                             corr_fun, kappa_matern)
-
+        out_temp$distribution = "ProjSp"
         out[[i]] <- out_temp
       }
     }

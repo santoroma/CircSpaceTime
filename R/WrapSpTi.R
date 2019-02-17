@@ -126,7 +126,7 @@ WrapSpTi  = function(
   ## ## ## ## ## ## ##
   ## Number of observations
   ## ## ## ## ## ## ##
-  
+
   n_j						  =	length(x)
 
   ## ## ## ## ## ## ##
@@ -164,7 +164,7 @@ WrapSpTi  = function(
 
   ## ## ## ## ## ## ##
   ##  Starting values
-  ## ## ## ## ## ## ##  
+  ## ## ## ## ## ## ##
 
 start_alpha				=	start[["alpha"]]
   if (length(start_alpha) != n_chains) {stop(paste('start[["alpha"]] length should be equal to n_chains (',
@@ -186,25 +186,25 @@ start_alpha				=	start[["alpha"]]
 
   ## ## ## ## ## ## ##
   ##  Distance matrices
-  ## ## ## ## ## ## ##  
-  
+  ## ## ## ## ## ## ##
+
   H						=	as.matrix(stats::dist(coords))
   Ht            = as.matrix(stats::dist(times))
 
   ## ## ## ## ## ## ##
   ##  Observations are centerer around pi, and the priors and starting value of
   ##  alpha are changed accordingly.
-  ## ## ## ## ## ## ## 
+  ## ## ## ## ## ## ##
 
   MeanCirc        =  atan2(sum(sin(x)),sum(cos(x)))
   x               = (x - MeanCirc + pi) %% (2*pi)
   start_alpha			=	(start_alpha - MeanCirc + pi) %% (2*pi)
 
-  priors_alpha[1]  = (priors_alpha[1] - MeanCirc + pi) %% (2*pi)  
+  priors_alpha[1]  = (priors_alpha[1] - MeanCirc + pi) %% (2*pi)
 
   ## ## ## ## ## ## ##
   ##  Model estimation
-  ## ## ## ## ## ## ## 
+  ## ## ## ## ## ## ##
 
     if (parallel) {
       ccc = try(library(doParallel))
@@ -215,7 +215,7 @@ start_alpha				=	start[["alpha"]]
         out_temp = WrapSpTiRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin, nSamples_save,
                               n_j,
-                              priors_alpha,priors_rho_sp,priors_rho_t,priors_sep_par,priors_sigma2, 
+                              priors_alpha,priors_rho_sp,priors_rho_t,priors_sep_par,priors_sigma2,
                               sdprop_rho_sp,sdprop_rho_t,sdprop_sep_par,sdprop_sigma2,
                               start_alpha[i],start_rho_sp[i],start_rho_t[i],start_sep_par[i],start_sigma2[i],
                               start_k,
@@ -224,12 +224,12 @@ start_alpha				=	start[["alpha"]]
         ## ## ## ## ## ## ##
         ##  Posterior samples of alpha are changed back to
         ## the original scale
-        ## ## ## ## ## ## ## 
+        ## ## ## ## ## ## ##
 
         out_temp$alpha = (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
 
-        ## ## ## ## ## ## ## 
-
+        ## ## ## ## ## ## ##
+        out_temp$distribution = "WrapSpTi"
         out_temp
       }
       stopCluster(cl)
@@ -239,21 +239,21 @@ start_alpha				=	start[["alpha"]]
         out_temp =  WrapSpTiRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin,nSamples_save,
                               n_j,
-                              priors_alpha,priors_rho_sp,priors_rho_t,priors_sep_par,priors_sigma2,                       
+                              priors_alpha,priors_rho_sp,priors_rho_t,priors_sep_par,priors_sigma2,
                               sdprop_rho_sp,sdprop_rho_t,sdprop_sep_par,sdprop_sigma2,
-                              start_alpha[i],start_rho_sp[i],start_rho_t[i],start_sep_par[i],start_sigma2[i], 
+                              start_alpha[i],start_rho_sp[i],start_rho_t[i],start_sep_par[i],start_sigma2[i],
                               start_k,
                               x,H, Ht, acceptratio)
 
         ## ## ## ## ## ## ##
         ##  Posterior samples of alpha are changed back to
         ## the original scale
-        ## ## ## ## ## ## ## 
+        ## ## ## ## ## ## ##
 
         out_temp$alpha = (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
 
-        ## ## ## ## ## ## ##                   
-
+        ## ## ## ## ## ## ##
+        out_temp$distribution = "WrapSpTi"
         out[[i]] = out_temp
       }
     }

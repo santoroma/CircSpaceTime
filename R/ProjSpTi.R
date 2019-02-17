@@ -8,7 +8,7 @@
 #' @param  start a list of 4 elements giving initial values for the model parameters. Each elements is a vector with \code{n_chains} elements
 #' \itemize{
 #' \item 	alpha the 2-d vector of the means of the Gaussian bi-variate distribution,
-#' \item  tau the correlation of the two components of the linear representation, 
+#' \item  tau the correlation of the two components of the linear representation,
 #' \item  rho_sp the spatial decay parameter,
 #' \item  rho_t the temporal decay parameter,
 #' \item sigma2 the process variance,
@@ -34,7 +34,7 @@
 #' @param parallel logical, if the multiplechains  must be lunched in parallel
 #' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
 #'@return it returns a list of \code{n_chains} lists each with elements
-#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen 
+#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
 #' @examples
 #' data(april)
 #' attach(april)
@@ -134,7 +134,7 @@ ProjSpTi  <- function(
   ## ## ## ## ## ## ##
   ## Number of observations
   ## ## ## ## ## ## ##
-  
+
   n_j						  =	length(x)
 
   ## ## ## ## ## ## ##
@@ -178,7 +178,7 @@ ProjSpTi  <- function(
 
   ## ## ## ## ## ## ##
   ##  Starting values
-  ## ## ## ## ## ## ##  
+  ## ## ## ## ## ## ##
 
   start_alpha				=	start[["alpha"]]
   if (length(start_alpha) != 2*n_chains) {stop(paste('start[["alpha"]] length should be equal to 2*n_chains (',
@@ -188,10 +188,10 @@ ProjSpTi  <- function(
                                                 n_chains,')', sep = ''))}
   start_rho_t				=	start[["rho_t"]]
   if (length(start_rho_sp) != n_chains) {stop(paste('start[["rho_t"]] length should be equal to n_chains (',
-                                                n_chains,')', sep = ''))}  
+                                                n_chains,')', sep = ''))}
   start_sep_par				=	start[["sep_par"]]
   if (length(start_rho_sp) != n_chains) {stop(paste('start[["sep_par"]] length should be equal to n_chains (',
-                                                n_chains,')', sep = ''))}                                                           
+                                                n_chains,')', sep = ''))}
   start_tau				=	start[["tau"]]
   if (length(start_rho_sp) != n_chains) {stop(paste('start[["rho_sp"]] length should be equal to n_chains (',
                                                  n_chains,')', sep = ''))}
@@ -202,14 +202,14 @@ ProjSpTi  <- function(
 
   ## ## ## ## ## ## ##
   ##  Correlation function and distance matrix
-  ## ## ## ## ## ## ##  
+  ## ## ## ## ## ## ##
 
   H						=	as.matrix(stats::dist(coords))
   Ht            = as.matrix(stats::dist(times))
 
   ## ## ## ## ## ## ##
   ##  Model estimation
-  ## ## ## ## ## ## ## 
+  ## ## ## ## ## ## ##
 
     if (parallel) {
       ccc <- try(library(doParallel))
@@ -217,7 +217,7 @@ ProjSpTi  <- function(
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
       out <- foreach(i = 1:n_chains) %dopar% {
-        out_temp <- ProjSpTiRcpp(ad_start, ad_end, ad_esp,
+        out_temp = ProjSpTiRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,
                                      priors_tau,priors_sigma2,priors_rho_sp, priors_alpha_sigma, priors_alpha_mu, priors_rho_t, priors_sep_par,
@@ -225,6 +225,7 @@ ProjSpTi  <- function(
                                      start_tau[i],start_sigma2[i], start_rho_sp[i], start_alpha[(2*i-1):(2*i)], start_r,  start_rho_t[i], start_sep_par[i],
                                      x,H, acceptratio,
                                      corr_fun, kappa_matern)
+        out_temp$distribution = "ProjSpTi"
         out_temp
       }
       stopCluster(cl)
@@ -239,6 +240,7 @@ ProjSpTi  <- function(
                             start_tau[i],start_sigma2[i], start_rho_sp[i], start_alpha[(2*i-1):(2*i)], start_r, start_rho_t[i], start_sep_par[i],
                             x,H,Ht, acceptratio,
                             corr_fun, kappa_matern)
+        out_temp$distribution = "ProjSpTi"
 
         out[[i]] <- out_temp
       }

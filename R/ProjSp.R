@@ -207,8 +207,8 @@ ProjSp  <- function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      out <- foreach(i = 1:n_chains) %dopar% {
-        out_temp = ProjSpRcpp(ad_start, ad_end, ad_esp,
+      out <- foreach(i = 1:n_chains, .export = "kappa_matern") %dopar% {
+        out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,
                                      priors_tau,priors_sigma2,priors_rho, priors_alpha_sigma, priors_alpha_mu,

@@ -122,7 +122,7 @@ ProjSp  <- function(
   n_chains = 2, parallel = FALSE, n_cores = 2)
 {
 
-  x = x%%(2*pi)
+  x = x %% (2*pi)
   ## ## ## ## ## ## ##
   ## Number of observations
   ## ## ## ## ## ## ##
@@ -189,7 +189,6 @@ ProjSp  <- function(
   H						=	as.matrix(stats::dist(coords))
 
   corr_fun = corr_fun
-  kappa_matern = kappa_matern
   corr_fun_list <- c("exponential", "matern" ,"gaussian")
   if (!corr_fun %in% corr_fun_list) {
     error_msg <- paste("You should use one of these correlation functions: ",paste(corr_fun_list,collapse = "\n"),sep = "\n")
@@ -207,15 +206,15 @@ ProjSp  <- function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      out <- foreach(i = 1:n_chains, .export = "kappa_matern") %dopar% {
+      out <- foreach(i = 1:n_chains) %dopar% {
         out_temp <- ProjSpRcpp(ad_start, ad_end, ad_esp,
-                                     burnin, nSamples_save,
-                                     n_j, sdr_update_iter,
-                                     priors_tau,priors_sigma2,priors_rho, priors_alpha_sigma, priors_alpha_mu,
-                                     sdprop_tau,sdprop_sigma2,sdprop_rho, sdprop_r,
-                                     start_tau[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
-                                     x,H, acceptratio,
-                                     corr_fun, kappa_matern)
+                               burnin, thin,nSamples_save,
+                               n_j, sdr_update_iter,
+                               priors_tau ,priors_sigma2,priors_rho, priors_alpha_sigma, priors_alpha_mu,
+                               sdprop_tau,sdprop_sigma2,sdprop_rho, sdprop_r,
+                               start_tau[i],start_sigma2[i], start_rho[i], start_alpha[(2*i-1):(2*i)], start_r,
+                               x,H, acceptratio,
+                               corr_fun, kappa_matern)
         out_temp$distribution = "ProjSp"
         out_temp
       }

@@ -211,7 +211,7 @@ start_alpha				=	start[["alpha"]]
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl = makeCluster(n_cores)
       registerDoParallel(cl)
-      out = foreach(i = 1:n_chains) %dopar% {
+      try(out <- foreach(i = 1:n_chains) %dopar% {
         out_temp = WrapSpTiRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin, nSamples_save,
                               n_j,
@@ -231,11 +231,12 @@ start_alpha				=	start[["alpha"]]
         ## ## ## ## ## ## ##
         out_temp$distribution = "WrapSpTi"
         out_temp
-      }
+      }, silent = TRUE)
       stopCluster(cl)
+      if (class(out) == 'try-error') output <- out
     } else {
-      out = list()
-      for (i in 1:n_chains) {
+      out <- list()
+      output <- try( for (i in 1:n_chains) {
         out_temp =  WrapSpTiRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin,nSamples_save,
                               n_j,
@@ -255,7 +256,14 @@ start_alpha				=	start[["alpha"]]
         ## ## ## ## ## ## ##
         out_temp$distribution = "WrapSpTi"
         out[[i]] = out_temp
-      }
+      }, silent = TRUE)
     }
-  return(out)
+  if (class(output) == 'try-error') {
+    stop(paste("!!!!!!!!! Simulation Failure !!!!!!!!!
+Please check again and carefully the parameters' simulation setting
+The specific error was: ", output[1])
+    )
+  } else {
+    return(out)
+  }
 }

@@ -34,7 +34,7 @@
 #' @param parallel logical, if the multiplechains  must be lunched in parallel
 #' @param n_cores numeric, the number of cores to be used in the implementatiopn,it must be equal to the number of chains
 #'@return it returns a list of \code{n_chains} lists each with elements
-#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains and \code{corr_fun} characters with the type of spatial correlation chosen
+#' \code{tau},\code{tau}, \code{sigma2} vectors with the thinned chains,  \code{alpha} a matrix with \code{nrow=2} and \code{ncol=} the length of thinned chains, \code{r} a matrix with \code{nrow=length(x)} and \code{ncol=} the length of thinned chains
 #' @examples
 #' data(april)
 #' attach(april)
@@ -86,7 +86,6 @@
 #'    BurninThin    = c(burnin = 3000, thin = 1),
 #'    accept_ratio = 0.5,
 #'    adapt_param = c(start = 1000, end = 10000, exp = 0.95, sdr_update_iter = 50),
-#'    corr_fun = "exponential",
 #'    n_chains = 1,
 #'    parallel = T,
 #'    n_cores = 2)
@@ -200,7 +199,7 @@ ProjSpTi  <- function(
   start_r					=	start[["r"]]
 
   ## ## ## ## ## ## ##
-  ##  Correlation function and distance matrix
+  ##  Distance matrix
   ## ## ## ## ## ## ##
 
   H						=	as.matrix(stats::dist(coords))
@@ -215,35 +214,40 @@ ProjSpTi  <- function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      out <- foreach(i = 1:n_chains) %dopar% {
+      try(out <- foreach(i = 1:n_chains) %dopar% {
         out_temp = ProjSpTiRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,
                                      priors_tau,priors_sigma2,priors_rho_sp, priors_alpha_sigma, priors_alpha_mu, priors_rho_t, priors_sep_par,
                                      sdprop_tau,sdprop_sigma2,sdprop_rho_sp, sdprop_r, sdprop_rho_t,sdprop_sep_par,
                                      start_tau[i],start_sigma2[i], start_rho_sp[i], start_alpha[(2*i-1):(2*i)], start_r,  start_rho_t[i], start_sep_par[i],
-                                     x,H, acceptratio,
-                                     corr_fun, kappa_matern)
+                                     x,H, acceptratio)
         out_temp$distribution = "ProjSpTi"
         out_temp
-      }
+      }, silent = TRUE)
+      if (class(out) == 'try-error') output <- out
       stopCluster(cl)
     } else {
       out <- list()
-      for ( i in 1:n_chains) {
+      output <- try(for (i in 1:n_chains) {
         out_temp <- ProjSpTiRcpp(ad_start, ad_end, ad_esp,
                             burnin, thin,nSamples_save,
                             n_j, sdr_update_iter,
                             priors_tau ,priors_sigma2,priors_rho_sp, priors_alpha_sigma, priors_alpha_mu, priors_rho_t, priors_sep_par,
                             sdprop_tau,sdprop_sigma2,sdprop_rho_sp, sdprop_r, sdprop_rho_t,sdprop_sep_par,
                             start_tau[i],start_sigma2[i], start_rho_sp[i], start_alpha[(2*i-1):(2*i)], start_r, start_rho_t[i], start_sep_par[i],
-                            x,H,Ht, acceptratio,
-                            corr_fun, kappa_matern)
+                            x,H,Ht, acceptratio)
         out_temp$distribution = "ProjSpTi"
 
         out[[i]] <- out_temp
-      }
+      }, silent = TRUE)
     }
-
-  return(out)
+  if (class(output) == 'try-error') {
+    stop(paste("!!!!!!!!! Simulation Failure !!!!!!!!!
+Please check again and carefully the parameters' simulation setting
+The specific error was: ", output[1])
+    )
+  } else {
+    return(out)
+  }
 }

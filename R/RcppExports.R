@@ -13,8 +13,8 @@ ProjSpRcpp <- function(ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_
     .Call('_CircSpaceTime_ProjSpRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_j, iter_z, prior_tau, prior_sigma2, prior_rho, prior_alpha_sigma, prior_alpha_mu, sdtau, sdsigma2, sdrho, sdr, tau, sigma2, rho, alpha, r, x, H, acceptratio, corr_fun, kappa_matern)
 }
 
-ProjSpTiRcpp <- function(ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_j, iter_z, prior_tau, prior_sigma2, prior_rho_sp, prior_alpha_sigma, prior_alpha_mu, prior_rho_t, prior_sep_par, sdtau, sdsigma2, sdrho_sp, sdr, sdrho_t, sdsep_par, tau, sigma2, rho_sp, alpha, r, rho_t, sep_par, x, H, Ht, acceptratio, corr_fun, kappa_matern) {
-    .Call('_CircSpaceTime_ProjSpTiRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_j, iter_z, prior_tau, prior_sigma2, prior_rho_sp, prior_alpha_sigma, prior_alpha_mu, prior_rho_t, prior_sep_par, sdtau, sdsigma2, sdrho_sp, sdr, sdrho_t, sdsep_par, tau, sigma2, rho_sp, alpha, r, rho_t, sep_par, x, H, Ht, acceptratio, corr_fun, kappa_matern)
+ProjSpTiRcpp <- function(ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_j, iter_z, prior_tau, prior_sigma2, prior_rho_sp, prior_alpha_sigma, prior_alpha_mu, prior_rho_t, prior_sep_par, sdtau, sdsigma2, sdrho_sp, sdr, sdrho_t, sdsep_par, tau, sigma2, rho_sp, alpha, r, rho_t, sep_par, x, H, Ht, acceptratio) {
+    .Call('_CircSpaceTime_ProjSpTiRcpp', PACKAGE = 'CircSpaceTime', ad_start, ad_end, ad_exp, burnin, thin, nSamples_save, n_j, iter_z, prior_tau, prior_sigma2, prior_rho_sp, prior_alpha_sigma, prior_alpha_mu, prior_rho_t, prior_sep_par, sdtau, sdsigma2, sdrho_sp, sdr, sdrho_t, sdsep_par, tau, sigma2, rho_sp, alpha, r, rho_t, sep_par, x, H, Ht, acceptratio)
 }
 
 WrapKrigSpCpp <- function(sigma2, alpha, rho, k, n, nsample, H_tot, nprev, x, corr_fun, kappa_matern) {

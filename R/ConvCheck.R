@@ -69,19 +69,34 @@
 #' plot(check$mcmc) # remember that alpha is a circular variable
 #' @export
 
-ConvCheck <- function(mod, startit = 15000, thin = 10)
-  {
-#
+ConvCheck <- function(mod, startit = 15000, thin = 10) {
   n <- length(mod)
   m1 <- list(n)
-  parameters <- which(!(names(mod[[1]]) %in% c("k","corr_fun", "distribution")))
+  distribution <- mod[[1]]$distribution
+  if (grepl("Wrap", distribution)) {
+    parameters <- which(!(names(mod[[1]]) %in% c("k", "corr_fun",
+                                                 "distribution")))
     for (i in 1:n) {
-  	  m1[[i]] <- data.frame(mod[[i]][parameters])
-      m1[[i]] <- coda::mcmc(m1[[i]], start = startit,thin = thin)
+      m1[[i]] <- data.frame(mod[[i]][parameters])
+      m1[[i]] <- coda::mcmc(m1[[i]], start = startit, thin = thin)
     }
-    m1 <- coda::mcmc.list(m1)
-    rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
+
+  }
+  if (grepl("Proj", distribution)) {
+    parameters <- which(!(names(mod[[1]]) %in% c("r", "corr_fun",
+                                                 "distribution","alpha")))
+    for (i in 1:n) {
+      m1[[i]] <- data.frame(mod[[i]][parameters])
+      m1[[i]]$alpha1 <- mod[[i]]$alpha[1,]
+      m1[[i]]$alpha2 <- mod[[i]]$alpha[2,]
+      m1[[i]] <- coda::mcmc(m1[[i]], start = startit, thin = thin)
+    }
+
+
+  }
+  m1 <- coda::mcmc.list(m1)
+  rb <- coda::gelman.diag(m1, confidence = 0.95, transform = FALSE,
                           autoburnin = TRUE)
-    return(list(Rhat = rb, mcmc = m1))
+  return(list(Rhat = rb, mcmc = m1))
 }
 

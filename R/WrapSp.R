@@ -211,9 +211,9 @@ WrapSp  = function(
   if (parallel) {
       ccc = try(library(doParallel))
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
-      cl = makeCluster(n_cores)
+      cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      out = foreach(i = 1:n_chains) %dopar% {
+      try(out <- foreach(i = 1:n_chains) %dopar% {
         out_temp = WrapSpRcpp(ad_start, ad_end, ad_exp,
                               burnin, thin,nSamples_save,
                               n_j,
@@ -234,12 +234,14 @@ WrapSp  = function(
         ###it is a wrapped spatial distribution
         out_temp$distribution = "WrapSp"
         out_temp
-      }
+      }, silent = TRUE)
+      if (class(out) == 'try-error') output <- out
       stopCluster(cl)
     } else {
-    out = list()
-    for (i in 1:n_chains) {
-      out_temp = WrapSpRcpp(ad_start, ad_end, ad_exp,
+    out <- list()
+    output <- try(
+      for (i in 1:n_chains) {
+        out_temp <- WrapSpRcpp(ad_start, ad_end, ad_exp,
                        burnin, thin, nSamples_save,
                        n_j,
                        prior_alpha,prior_rho,prior_sigma2,
@@ -253,13 +255,20 @@ WrapSp  = function(
         ## the original scale
         ## ## ## ## ## ## ##
 
-        out_temp$alpha = (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
+        out_temp$alpha <- (out_temp$alpha - pi + MeanCirc ) %% (2*pi)
 #### it comes from Wrapped spatial distribution
-        out_temp$distribution = "WrapSp"
+        out_temp$distribution <- "WrapSp"
         ## ## ## ## ## ## ##
-      out[[i]] = out_temp
-    }
+      out[[i]] <- out_temp
+      } , silent = TRUE
+    )
   }
-
-  return(out)
+  if (class(output) == 'try-error') {
+    stop(paste("!!!!!!!!! Simulation Failure !!!!!!!!!
+Please check again and carefully the parameters' simulation setting
+The specific error was: ", output[1])
+    )
+  } else {
+    return(out)
+  }
 }

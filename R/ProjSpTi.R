@@ -214,7 +214,7 @@ ProjSpTi  <- function(
       if (class(ccc) == 'try-error') stop("You shoul install doParallel package in order to use parallel = TRUE option")
       cl <- makeCluster(n_cores)
       registerDoParallel(cl)
-      try(out <- foreach(i = 1:n_chains) %dopar% {
+      out <- try(foreach(i = 1:n_chains) %dopar% {
         out_temp = ProjSpTiRcpp(ad_start, ad_end, ad_esp,
                                      burnin, nSamples_save,
                                      n_j, sdr_update_iter,

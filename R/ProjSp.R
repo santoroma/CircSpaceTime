@@ -219,6 +219,7 @@ ProjSp  <- function(
         out_temp
       }, silent = TRUE)
       stopCluster(cl)
+      output <- NULL
       if (class(out) == 'try-error') output <- out
     } else {
       out <- list()

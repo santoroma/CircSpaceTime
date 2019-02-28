@@ -225,6 +225,7 @@ ProjSpTi  <- function(
         out_temp$distribution = "ProjSpTi"
         out_temp
       }, silent = TRUE)
+      output <- NULL
       if (class(out) == 'try-error') output <- out
       stopCluster(cl)
     } else {

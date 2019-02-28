@@ -233,6 +233,7 @@ start_alpha				=	start[["alpha"]]
         out_temp
       }, silent = TRUE)
       stopCluster(cl)
+      output <- NULL
       if (class(out) == 'try-error') output <- out
     } else {
       out <- list()

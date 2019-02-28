@@ -235,6 +235,7 @@ WrapSp  = function(
         out_temp$distribution = "WrapSp"
         out_temp
       }, silent = TRUE)
+      output <- NULL
       if (class(out) == 'try-error') output <- out
       stopCluster(cl)
     } else {

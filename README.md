@@ -26,19 +26,20 @@ devtools_installed <- require(devtools)
  Dependencies: Rcpp, RcppArmadillo, circular, ggplot2, coda   
  Suggested: foreach, parallel, iterators, doParallel, knitr, rmarkdown, gridExtra   
  
- ### From binary
+ ### From CRAN
  The package is in submission on CRAN.
  
-  Dependencies: Rcpp, RcppArmadillo, circular, ggplot2, coda   
- Suggested: foreach, parallel, iterators, doParallel, knitr, rmarkdown, gridExtra   
-
+ ``` r
+   install.packages("CircSpaceTime", dep = TRUE)
+ ``` 
+ 
  ## Using the package
  
  ```r
  library(CircSpaceTime)
  ```
  
- For further information on the package you can read the help or take a look at the [vignette](https://santoroma.github.io/CircSpaceTime/)
+ For further information on the package you can read the help or take a look at the [vignette](https://github.com/santoroma/CircSpaceTime/tree/master/inst/doc)
 
 ## Issues
 

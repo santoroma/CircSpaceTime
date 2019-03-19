@@ -1,0 +1,25 @@
+Package: CircSpaceTime
+Type: Package
+Title: Spatial and Spatio-Temporal Bayesian Model for Circular Data
+Version: 0.9.0
+Authors@R: c(person("Giovanna", "Jona Lasinio", email = "giovanna.jonalasinio@uniroma1.it", role = c("aut"), comment = c(ORCID = "0000-0001-8912-5018")),
+          person("Gianluca", "Mastrantonio", email = "gianluca.mastrantonio@polito.it", role = c("aut"), comment = c(ORCID = "0000-0002-2963-6729")), 
+          person("Mario", "Santoro", email = "santoro.ma@gmail.com", role = c("aut", "cre"), comment = c(ORCID = c("0000-0001-6626-9430"))))
+BugReports: https://github.com/santoroma/CircSpaceTime
+Description: Implementation of Bayesian models for spatial and spatio-temporal
+             interpolation of circular data using Gaussian Wrapped and Gaussian Projected distributions.
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/santoroma/CircSpaceTime
+Suggests: foreach, iterators, parallel, doParallel, gridExtra
+LinkingTo: Rcpp, RcppArmadillo, RInside
+Imports: Rcpp (>= 0.12.14), circular, RInside, coda, ggplot2
+RoxygenNote: 6.1.0
+NeedsCompilation: yes
+Packaged: 2019-03-19 11:49:33 UTC; root
+Author: Giovanna Jona Lasinio [aut] (0000-0001-8912-5018),
+  Gianluca Mastrantonio [aut] (0000-0002-2963-6729),
+  Mario Santoro [aut, cre] (0000-0001-6626-9430)
+Maintainer: Mario Santoro <santoro.ma@gmail.com>
+Depends: R (>= 2.10)

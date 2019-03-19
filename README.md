@@ -1,17 +1,13 @@
 # CircSpaceTime
-An R package for spatial, spatio-temporal and temporal model for circular, cylindrical and spherical data
+Spatial and Spatio-Temporal Bayesian Model for Circular Data
 
-This package implements spatial, spatio-temporal and temporal models for circular data.  
+Implementation of Bayesian models for spatial and spatio-temporal interpolation of circular data using Gaussian Wrapped and Gaussian Projected distributions.
 
 Currently the following models are implemented:  
 Spatial Wrapped Normal   
 Spatial Projected Normal   
-
-Yet to come:      
 Spatio-Temporal Wrapped Normal   
 Spatio-Temporal Projected Normal   
-
-We are going to update constantly the library with Bayesian and classical models dealing with complex dependence structures for circular, cylindrical and spherical variable.
 
 ## Installation
 
@@ -28,15 +24,14 @@ devtools_installed <- require(devtools)
  ``` 
  
  Dependencies: Rcpp, RcppArmadillo, circular, ggplot2, coda   
- Suggested: foreach, doParallel, knitr, rmarkdown, gridExtra   
+ Suggested: foreach, parallel, iterators, doParallel, knitr, rmarkdown, gridExtra   
  
  ### From binary
- The package will be released on CRAN before the end of the 2018.
- For now you can download (win or mac) package [here](https://github.com/santoroma/CircSpaceTime/tree/master/binary)
+ The package is in submission on CRAN.
  
- Dependencies: circular, ggplot2, coda   
- Suggested: foreach, doParallel, knitr, rmarkdown, gridExtra   
- 
+  Dependencies: Rcpp, RcppArmadillo, circular, ggplot2, coda   
+ Suggested: foreach, parallel, iterators, doParallel, knitr, rmarkdown, gridExtra   
+
  ## Using the package
  
  ```r

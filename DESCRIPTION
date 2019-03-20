@@ -8,7 +8,9 @@ Authors@R: c(person("Giovanna", "Jona Lasinio", email = "giovanna.jonalasinio@un
 BugReports: https://github.com/santoroma/CircSpaceTime
 Description: Implementation of Bayesian models for spatial and spatio-temporal
              interpolation of circular data using Gaussian Wrapped and Gaussian Projected distributions.
-             We developed the methods described in Jona Lasinio G. et al. (2012) <doi: 10.1214/12-aoas576>, Wang F. et al. (2014) <doi: 10.1080/01621459.2014.934454> and Mastrantonio G. et al. (2016) <doi: 10.1007/s11749-015-0458-y>
+             We developed the methods described in Jona Lasinio G. et al. (2012) <doi: 10.1214/12-aoas576>, 
+             Wang F. et al. (2014) <doi: 10.1080/01621459.2014.934454> and 
+             Mastrantonio G. et al. (2016) <doi: 10.1007/s11749-015-0458-y>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

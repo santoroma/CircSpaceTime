@@ -59,7 +59,8 @@
 #' @references T. Gneiting,  "Nonseparable, Stationary Covariance Functions for Space-Time
 #' Data", JASA 97 (2002), 590-600
 #' @examples
-#' \dontrun{
+#'
+#' library(CircSpaceTime)
 #' #### simulated example
 #' ## auxiliary functions
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -74,79 +75,74 @@
 #' # Simulation using a gneiting covariance function
 #' ####
 #' set.seed(1)
-#' n <- 100
+#' n <- 20
 #'
 #' coords  <- cbind(runif(n,0,100), runif(n,0,100))
-#' coordsT <- sort(runif(n,0,100))) #it works also with unordered numbers
+#' coordsT <- cbind(runif(n,0,100))
 #' Dist <- as.matrix(dist(coords))
 #' DistT <- as.matrix(dist(coordsT))
 #'
 #' rho     <- 0.05
 #' rhoT    <- 0.01
 #' sep_par <- 0.1
-#' sigma2  <- 0.3
+#' sigma2  <- 1
 #' alpha   <- c(0.5)
-#' SIGMA <- sigma2*(rhoT*DistT^2+1)^(-1)*
-#'    exp(-rho*Dist/(rhoT*DistT^2+1)^(sep_par/2))
+#' SIGMA   <- sigma2*(rhoT*DistT^2+1)^(-1)*exp(-rho*Dist/(rhoT*DistT^2+1)^(sep_par/2))
 #' tau     <- 0.2
 #'
-#' Y <- rmnorm(1,rep(alpha,times=n),
-#'           kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*
-#'                tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+#' Y <- rmnorm(1,rep(alpha,times=n), kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
 #' theta <- c()
-#' # Projection step
 #' for(i in 1:n) {
-#'    theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
-#' }
-#' par(mfrow=c(1,1))
+#'  theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
+#'}
+#' theta <- theta %% (2*pi) ## to be sure we have values in (0,2pi)
 #' rose_diag(theta)
 #' ################ some useful quantities
 #' rho_sp.min <- 3/max(Dist)
-#' rho_sp.max <- 3/min(Dist[Dist>0])
-#' rho_t.min  <- 3/max(DistT)
-#' rho_t.max  <- 3/min(DistT[DistT>0])
+#' rho_sp.max <- rho_sp.min+0.5
+#' rho_t.min <- 3/max(DistT)
+#' rho_t.max <- rho_t.min+0.5
 #' ### validation set 20% of the data
 #' val <- sample(1:n,round(n*0.2))
 #'
-#' set.seed(100)
+#' set.seed(200)
+#' a <- Sys.time()
 #' mod <- ProjSpTi(
-#'   x       = theta[-val],
-#'   coords    = coords[-val,],
-#'   times    = coordsT[-val],
-#'   start   = list("alpha"      = c(1,1,pi/4,pi/4),
-#'                  "rho_sp"     = c(0.1, rho_sp.max),
-#'                  "rho_t"     = c(0.1, rho_t.max),
-#'                  "sep_par"  = c(0.4, 0.01),
-#'                  "tau"     = c(0.1, 0.5),
-#'                  "sigma2"    = c(0.1, 1),
-#'                  "r"       = abs(rnorm(  length(theta))  )),
-#'   priors   = list("rho_sp"      = c(0.001,3/4), #Uniform prior in this interval
-#'                   "rho_t"      = c(0.001,3/4),#Uniform prior in this interval
-#'                   "sep_par"  = c(1,1), #Beta distribution
-#'                   "tau"      = c(-1,1), ## Uniform prior in this interval
-#'                  "sigma2"    = c(5,5), #inverse gamma
-#'                  "alpha_mu" = c(0, 0), #a vector of 2 elements,
-#'                                        #the means of the bivariate Gaussian distribution
-#'                  "alpha_sigma" = diag(10,2)# a 2x2 matrix, the covariance matrix
-#'                                            #of the bivariate Gaussian distribution,
-#'   )  ,
-#'   sd_prop   = list("sep_par"=0.1,"sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1,"rho_t" = 0.1,
-#'                       "sdr" = sample(.05,length(theta), replace = T)),
-#'   iter    = 150000,
-#'   BurninThin    = c(burnin = 50000, thin = 10),
-#'   accept_ratio = 0.234,
-#'   adapt_param = c(start = 1, end = 1000, exp = 0.5),
-#'   n_chains = 2 ,
-#'   # It is better to install doParallel and set parallel = TRUE and n_cores >=2
-#'   # With parallel = FALSE it takes a lot of time
-#'   parallel = FALSE
-#' )
-#' check <- ConvCheck(mod)
-#' check$Rhat ### convergence has been reached
+#'  x       = theta[-val],
+#'  coords    = coords[-val,],
+#'  times    = coordsT[-val],
+#'  start   = list("alpha"      = c(1,1,pi/4,pi/4),
+#'                 "rho_sp"     = c(0.1, 0.3),
+#'                 "rho_t"     = c(0.1, 0.2),
+#'                 "sep_par"  = c(0.4, 0.01),
+#'                 "tau"     = c(0.1, 0.5),
+#'                "sigma2"    = c(0.1, 1),
+#'                "r"       = abs(rnorm(  length(theta))  )),
+#'  priors   = list("rho_sp"      = c(rho_sp.min,rho_sp.max), #Uniform prior in this interval
+#'                  "rho_t"      = c(rho_t.min,rho_t.max),#Uniform prior in this interval
+#'                  "sep_par"  = c(1,1), #Beta distribution
+#'                  "tau"      = c(-1,1), ## Uniform prior in this interval
+#'                 "sigma2"    = c(10,3), #inverse gamma
+#'                  "alpha_mu" = c(0, 0), ##a vector of 2 elements, the means of the bivariate Gaussian distribution
+#'                  "alpha_sigma" = diag(10,2)# a 2x2 matrix, the covariance matrix of the bivariate Gaussian distribution,
+#'  )  ,
+#'  sd_prop   = list("sep_par"=0.1,"sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1,"rho_t" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  iter    = 50000,
+#'  BurninThin    = c(burnin = 20000, thin = 2),
+#'  accept_ratio = 0.234,
+#'  adapt_param = c(start = 155000, end = 156000, exp = 0.5),
+#'  n_chains = 2 ,
+#'  parallel = FALSE,#slower but still feasible without parallelization
+#'  n_cores = 1
+#')
+#' Sys.time()- a
+#' #' check$Rhat ### convergence has been reached when the values are close to 1
+#' #### graphical checking
+#' #### recall that it is made of as many lists as the number of chains and it has elements named
+#' #### as the model's parameters
 #' par(mfrow = c(3,3))
-#' #it's better to install the coda package for chains/simulations diagnostic
 #' coda::traceplot(check$mcmc)
-#' }
+#' # move to prediction once convergence is achieved using ProjKrigSpTi
 #' @export
 ProjSpTi  <- function(
   x     = x,

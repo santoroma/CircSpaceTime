@@ -60,84 +60,78 @@
 #'  "Modeling space and space-time directional data using projected Gaussian processes",
 #'  Journal of the American Statistical Association,109 (2014), 1565-1580
 #' @examples
-#' \dontrun{
-#'  ####
-#'  # Simulation
-#'  ####
-#'  set.seed(1)
-#'  n <- 100
-#'  coords <- cbind(runif(n,0,100), runif(n,0,100))
-#'  Dist <- as.matrix(dist(coords))
-#'  rho     <- 0.05
-#'  tau     <- 0.2
-#'  sigma2  <- 0.3
-#'  alpha   <- c(0.5, 0.2)
-#'  SIGMA   <- sigma2*exp(-(rho*Dist)) #exponential covariance function
-#'  Y <- rmnorm(1,rep(alpha,times=n),
-#'         kronecker(SIGMA,
-#'            matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,
-#'                nrow=2 )
-#'          )
-#'        )
-#' #Projection step
-#'  theta <- c()
-#'  for(i in 1:n) {
-#'   theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
-#'  }
 #'
+#' library(CircSpaceTime)
+#'  ####
+#'  # Simulation using exponential  spatial covariance function
+#'  ####
+#' set.seed(1)
+#' n <- 20
+#' coords <- cbind(runif(n,0,100), runif(n,0,100))
+#' Dist <- as.matrix(dist(coords))
+#'
+#' rho     <- 0.05
+#' tau     <- 0.2
+#' sigma2  <- 1
+#' alpha   <- c(0.5,0.5)
+#' SIGMA   <- sigma2*exp(-rho*Dist)
+#'
+#' Y <- rmnorm(1,rep(alpha,times=n),
+#' kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+#' theta <- c()
+#' for(i in 1:n) {
+#'   theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
+#' }
+#' theta <- theta %% (2*pi) #to be sure to have values in (0,2pi)
+#' hist(theta)
 #' rose_diag(theta)
 #'
-#'  val <- sample(1:n,round(n*0.1))
-#'  set.seed(100)
+#' val <- sample(1:n,round(n*0.1))
 #'
-#'  #### Posterior estimation
-#'  mod_exp <- ProjSp(
-#'    x       = theta[-val],
-#'    coords    = coords[-val,],
-#'    start   = list("alpha"      = c(1,1),
-#'                  "rho"     = c(0.1),
-#'                  "tau"     = c(0.1),
-#'                  "sigma2"    = c(0.1),
-#'                  "r"       = abs(rnorm(  length(theta))  )),
-#'    priors   = list("rho"      = c(0.03,3),
-#'                    "tau"      = c(-1,1),
-#'                    "sigma2"    = c(5,5),
-#'                    "alpha_mu" = c(0, 0),
-#'                    "alpha_sigma" = diag(10,2)),
-#'  sd_prop   = list("sigma2" = 0.1,
-#'                   "tau" = 0.1,
-#'                   "rho" = 0.1,
-#'                   "sdr" = sample(.05,length(theta),
-#'                   replace = T)),
-#'   iter    = 36000,
-#'   BurninThin    = c(burnin = 20000, thin = 8),
-#'   accept_ratio = 0.234,
-#'   adapt_param = c(start = 1, end = 1000, exp = 0.5),
-#'   corr_fun = "exponential"
-#' 	  kappa_matern = .5,
-#' 	  n_chains = 1 ,
-#'   parallel = F
-#'   )
+#' ################ some useful quantities
+#' rho.min <- 3/max(Dist)
+#' rho.max <- rho_sp.min+0.5
 #'
-#'  # check convergence graphically, with multiple chains the function ConvCheck can be used
+#' set.seed(100)
+#' a <- Sys.time()
+#' mod <- ProjSp(
+#'  x       = theta[-val],
+#'  coords    = coords[-val,],
+#'  start   = list("alpha"      = c(1,1,0.5,0.5),
+#'                 "rho"     = c(0.1,0.3),
+#'                 "tau"     = c(0.1, 0.5),
+#'                 "sigma2"    = c(0.1, 1),
+#'                 "r"       = abs(rnorm(  length(theta))  )),
+#'  priors   = list("rho"      = c(rho.min,rho.max),
+#'                  "tau"      = c(-1,1),
+#'                 "sigma2"    = c(10,3),
+#'                 "alpha_mu" = c(0, 0),
+#'                 "alpha_sigma" = diag(10,2)
+#'  )  ,
+#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  iter    = 100000,
+#'  BurninThin    = c(burnin = 50000, thin = 10),
+#'  accept_ratio = 0.234,
+#'  adapt_param = c(start = 120000, end = 120000, exp = 0.5),#no adaptation
+#'  corr_fun = "exponential",
+#'   kappa_matern = .5,
+#'  n_chains = 2 ,
+#'  parallel = TRUE ,
+#'  n_cores = 2
+#')
+#' # If you don't want to install/use DoParallel
+#' # please set parallel = FALSE. Keep in mind that it can be substantially slower
+#'# How much it takes?
+#' Sys.time()-a
+#' check <-  ConvCheck(mod)
+#' check$Rhat #close to 1 we have convergence
 #'
-#'  par(mfrow=c(2,1))
-#'  plot(mod_exp[[1]]$alpha[1,],type="l")
-#'  abline(h=alpha[1],col=2)
+#' #### graphical check
+#' par(mfrow=c(3,2))
+#' coda::traceplot(check$mcmc)
 #'
-#'  plot(mod_exp[[1]]$alpha[2,],type="l")
-#'  abline(h=alpha[2],col=2)
-#'
-#'  par(mfrow=c(3,1))
-#'  plot(mod_exp[[1]]$sigma2[],type="l")
-#'  abline(h=sigma2[1],col=2)
-#'
-#'  plot(mod_exp[[1]]$rho[],type="l")
-#'  abline(h=rho[1],col=2)
-#'
-#'  plot(mod_exp[[1]]$tau[],type="l")
-#'  abline(h=rho[1],col=2)
-#' }
+#'  par(mfrow=c(1,1))
+#' # once convergence is achieved move to prediction using ProjKrigSp
 #' @export
 
 

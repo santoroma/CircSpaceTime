@@ -12,18 +12,19 @@
 #' for template = "wind_rose" direction is 1.
 #' @return The plot in ggplot2 format.
 #' @examples
-#' \dontrun{
-#' require(circular)
+#'
+#' library(CircSpaceTime)
 #' x<-rwrappedstable(200, index=1.5, skewness=.5)
 #' x1<-rwrappedstable(200, index=2, skewness=.5)
 #' x2<-rwrappedstable(200, index=0.5, skewness=1)
 #' rose_diag(x,bins=15,color="green")
 #' rose_diag(x1,bins=15,color="blue",alpha=.5,add=T)
 #' rose_diag(x2,bins=15,color="red",alpha=.5,add=T)
-#' }
+#'
 #' @export
 rose_diag <- function(x, bins=15, color= "red", alpha = 1, start = 0, add = FALSE, template = "rad", direction = NULL) {
   # inspired from https://stackoverflow.com/questions/15125628/putting-mathematical-symbols-and-subscripts-mixed-with-regular-letters-in-r-ggpl
+  x <- x %% (2*pi)
   if ( is.null(direction) & template == "wind_rose") direction = 1
   if ( is.null(direction) & template == "rad") direction = -1
   if (template == "rad") labels <- c(0, expression(pi/2), expression(pi), expression(3/2*pi))

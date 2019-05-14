@@ -59,6 +59,10 @@
 #' The Annals of Applied Statistics 6 (2013), 1478-1498
 #' @examples
 #'
+# This is the first part of the WrapKrigSp example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#' \donttest{
 #' library(CircSpaceTime)
 #' ## auxiliary function
 #' rmnorm<-function(n = 1, mean = rep(0, d), varcov){
@@ -94,7 +98,6 @@
 #' val <- sample(1:n,round(n*0.1))
 #'
 #' set.seed(12345)
-#' a <- Sys.time()
 #' mod <- WrapSp(
 #'	 x       = theta[-val],
 #'	 coords    = coords[-val,],
@@ -117,7 +120,6 @@
 #'  n_chains=2 ,
 #'  n_cores=1
 #'	)
-#'	Sys.time()- a
 #' check<-ConvCheck(mod)
 #' check$Rhat ## close to 1 means convergence has been reached
 #' ## graphical check
@@ -125,6 +127,7 @@
 #' coda::traceplot(check$mcmc)
 #'
 #' ##### We move to the spatial interpolation see WrapKrigSp
+#' }
 #'
 #' @export
 

@@ -72,7 +72,6 @@
 #' val <- sample(1:n,round(n*0.1))
 #'
 #' set.seed(12345)
-#' a <- Sys.time()
 #' mod <- WrapSp(
 #'	 x       = theta[-val],
 #'	 coords    = coords[-val,],
@@ -91,11 +90,10 @@
 #'	 adapt_param = c(start = 40000, end = 45000, exp = 0.5),
 #' corr_fun = "exponential",
 #'   kappa_matern = .5,
-#'  parallel=FALSE, #With doParallel and n_cores=2 it is a lot faster
+#'  parallel=FALSE, #With doParallel and n_cores>=2 it is a lot faster
 #'  n_chains=2 ,
 #'  n_cores=1
 #'	)
-#'	 Sys.time()- a
 #' check<-ConvCheck(mod)
 #' check$Rhat ## close to 1 means convergence has been reached
 #' ## graphical check
@@ -112,8 +110,8 @@
 #')
 #'
 #'#### check the quality of the prediction using APE and CRPS
-#' ApeCheck <- APEcirc(theta[val],Krig$Pred_out)
-#' CrpsCheck <- CRPScirc(theta[val],Krig$Pred_out)
+#' ApeCheck <- APEcirc(theta[val],Krig$Prev_out)
+#' CrpsCheck <- CRPScirc(theta[val],Krig$Prev_out)
 #'
 #' @export
 WrapKrigSp <- function(

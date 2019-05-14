@@ -23,7 +23,21 @@
 #' and its Application to Mesoscale Forecast Ensemble Verification",  Q.J.R. Meteorol. Soc. 132 (2005), 2925-2942.
 #' @examples
 #'
+# This is the first part of the ProjKrigSp example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#' \donttest{
 #' library(CircSpaceTime)
+#' ## auxiliary function
+#' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
+#'   d <- if (is.matrix(varcov))
+#'     ncol(varcov)
+#'   else 1
+#'   z <- matrix(rnorm(n * d), n, d) %*% chol(varcov)
+#'   y <- t(mean + t(z))
+#'   return(y)
+#' }
+#'
 #'  ####
 #'  # Simulation using exponential  spatial covariance function
 #'  ####
@@ -39,7 +53,7 @@
 #' SIGMA   <- sigma2*exp(-rho*Dist)
 #'
 #' Y <- rmnorm(1,rep(alpha,times=n),
-#' kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+#'             kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
 #' theta <- c()
 #' for(i in 1:n) {
 #'   theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
@@ -52,7 +66,7 @@
 #'
 #' ################ some useful quantities
 #' rho.min <- 3/max(Dist)
-#' rho.max <- rho_sp.min+0.5
+#' rho.max <- rho.min + 0.5
 #'
 #' set.seed(100)
 #' a <- Sys.time()
@@ -70,7 +84,8 @@
 #'                 "alpha_mu" = c(0, 0),
 #'                 "alpha_sigma" = diag(10,2)
 #'  )  ,
-#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1,
+#'                    "sdr" = sample(.05,length(theta), replace = TRUE)),
 #'  iter    = 100000,
 #'  BurninThin    = c(burnin = 50000, thin = 10),
 #'  accept_ratio = 0.234,
@@ -95,8 +110,8 @@
 #'  par(mfrow=c(1,1))
 #'
 #' # move to prediction once convergence is achieved
-#' Krig <- WrapKrigSp(
-#'     WrapSp_out = mod_exp,
+#' Krig <- ProjKrigSp(
+#'     ProjSp_out = mod,
 #'     coords_obs =  coords[-val,],
 #'     coords_nobs =  coords[val,],
 #'     x_obs = theta[-val]
@@ -105,7 +120,7 @@
 #' # The quality of prediction can be checked using APEcirc and CRPScirc
 #' ape  <- APEcirc(theta[val],Krig$Prev_out)
 #' crps <- CRPScirc(theta[val],Krig$Prev_out)
-#'
+#' }
 #' @export
 CRPScirc <- function(obs, sim, bycol = FALSE){
 	if (bycol == TRUE) sim <- t(sim)

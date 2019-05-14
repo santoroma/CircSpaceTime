@@ -89,7 +89,7 @@
 #'                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
 #'                 "sigma2"    = c(0.1, 1),
 #'                 "sep_par"  = c(0.4, 0.01),
-#'                 "k"       = sample(0,length(theta), replace = T)),
+#'                 "k"       = sample(0,length(theta), replace = TRUE)),
 #'  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "sep_par"  = c(1,1), ### beta prior
@@ -112,7 +112,7 @@
 #' par(mfrow=c(3,2))
 #' coda::traceplot(check$mcmc)
 #'
-#' \dontcheck{
+#' \donttest{
 #' ## point and interval estimates can be extracted from the chains
 #'
 #' ## if we need an update:
@@ -121,7 +121,7 @@
 #'               "rho_t"     = c(mod[[1]]$rho_t[10000], mod[[2]]$rho_t[10000]),
 #'               "sigma2"    = c(mod[[1]]$sigma2[10000], mod[[2]]$sigma2[10000]),
 #'               "sep_par"  = c(mod[[1]]$sep_par[10000], mod[[2]]$sep_par[10000]),
-#'               "k"       = sample(0,length(theta), replace = T))
+#'               "k"       = sample(0,length(theta), replace = TRUE))
 #'
 #'
 #'

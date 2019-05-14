@@ -60,6 +60,10 @@
 #' Data", JASA 97 (2002), 590-600
 #' @examples
 #'
+# This is the first part of the WrapKrigSpTi example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#' \donttest{
 #' library(CircSpaceTime)
 #' ## functions
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -106,7 +110,6 @@
 #' rho_t.max  <- rho_t.min+0.5
 #' val <- sample(1:n,round(n*0.2)) #validation set
 #' set.seed(100)
-#' a <- Sys.time()
 #' mod <- WrapSpTi(
 #'  x       = theta[-val],
 #'  coords    = coords[-val,],
@@ -116,7 +119,7 @@
 #'                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
 #'                 "sigma2"    = c(0.1, 1),
 #'                 "sep_par"  = c(0.4, 0.01),
-#'                 "k"       = sample(0,length(theta), replace = T)),
+#'                 "k"       = sample(0,length(theta), replace = TRUE)),
 #'  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "sep_par"  = c(1,1), ### beta prior
@@ -132,14 +135,12 @@
 #'  parallel = FALSE,
 #'  n_cores = 1
 #' )
-#' Sys.time()-a
 #' check <- ConvCheck(mod,startit =1 ,thin=1)
 #' check$Rhat ## convergence has been reached
 #' ## when plotting chains remember that alpha is a circular variable
 #' par(mfrow=c(3,2))
 #' coda::traceplot(check$mcmc)
 #'
-#' \dontcheck{
 #' ## point and interval estimates can be extracted from the chains
 #'
 #' ## if we need an update:
@@ -148,7 +149,7 @@
 #'               "rho_t"     = c(mod[[1]]$rho_t[10000], mod[[2]]$rho_t[10000]),
 #'               "sigma2"    = c(mod[[1]]$sigma2[10000], mod[[2]]$sigma2[10000]),
 #'               "sep_par"  = c(mod[[1]]$sep_par[10000], mod[[2]]$sep_par[10000]),
-#'               "k"       = sample(0,length(theta), replace = T))
+#'               "k"       = sample(0,length(theta), replace = TRUE))
 #'
 #'
 #'

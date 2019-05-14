@@ -66,7 +66,8 @@
 #' SIGMA   <- sigma2*(rhoT*DistT^2+1)^(-1)*exp(-rho*Dist/(rhoT*DistT^2+1)^(sep_par/2))
 #' tau     <- 0.2
 #'
-#' Y <- rmnorm(1,rep(alpha,times=n), kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+#' Y <- rmnorm(1,rep(alpha,times=n),
+#'             kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
 #' theta <- c()
 #' for(i in 1:n) {
 #'  theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
@@ -99,10 +100,13 @@
 #'                  "sep_par"  = c(1,1), #Beta distribution
 #'                  "tau"      = c(-1,1), ## Uniform prior in this interval
 #'                 "sigma2"    = c(10,3), #inverse gamma
-#'                  "alpha_mu" = c(0, 0), ##a vector of 2 elements, the means of the bivariate Gaussian distribution
-#'                  "alpha_sigma" = diag(10,2)# a 2x2 matrix, the covariance matrix of the bivariate Gaussian distribution,
+#'                  "alpha_mu" = c(0, 0), ##a vector of 2 elements,
+#'                                        ##the means of the bivariate Gaussian distribution
+#'                  "alpha_sigma" = diag(10,2)# a 2x2 matrix, the covariance matrix of the
+#'                                            # bivariate Gaussian distribution,
 #'  )  ,
-#'  sd_prop   = list("sep_par"=0.1,"sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1,"rho_t" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  sd_prop   = list("sep_par"=0.1,"sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1,"rho_t" = 0.1,
+#'                   "sdr" = sample(.05,length(theta), replace = TRUE)),
 #'  iter    = 50000,
 #'  BurninThin    = c(burnin = 20000, thin = 2),
 #'  accept_ratio = 0.234,
@@ -112,7 +116,8 @@
 #'  n_cores = 1
 #')
 #' Sys.time()- a
-#' #' check$Rhat ### convergence has been reached when the values are close to 1
+#' check <- ConvCheck(mod)
+#' check$Rhat ### convergence has been reached when the values are close to 1
 #' #### graphical checking
 #' #### recall that it is made of as many lists as the number of chains and it has elements named
 #' #### as the model's parameters

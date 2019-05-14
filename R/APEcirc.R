@@ -24,6 +24,11 @@
 #' "Spatial analysis of wave direction data using wrapped Gaussian processes",
 #' The Annals of Applied Statistics 6 (2013), 1478-1498
 #' @examples
+# This is the first part of the WRAPKrigSp example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#'
+#' \donttest{
 #' library(CircSpaceTime)
 #' ## functions
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -80,7 +85,7 @@
 #'                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
 #'                 "sigma2"    = c(0.1, 1),
 #'                 "sep_par"  = c(0.4, 0.01),
-#'                 "k"       = sample(0,length(theta), replace = T)),
+#'                 "k"       = sample(0,length(theta), replace = TRUE)),
 #'  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "sep_par"  = c(1,1), ### beta prior
@@ -114,13 +119,13 @@
 #' ### checking the prediction
 #' Wrap_Ape <- APEcirc(theta[val], Krig$Prev_out)
 #' Wrap_Crps <- CRPScirc(theta[val], Krig$Prev_out)
-#'
+#' }
 #' @export
 APEcirc <- function(real, sim, bycol = F)
   {
 	if (bycol) {sim <- t(sim)}
-  ape <-rep(0,nrow(sim))
-  cc <- 1 -cos(sim - real)
-  ape <-apply(cc,1,mean)
-return(list(ApePoints = ape, Ape =mean(ape)))
+  ape <- rep(0,nrow(sim))
+  cc <- 1 - cos(sim - real)
+  ape <- apply(cc,1,mean)
+return(list(ApePoints = ape, Ape = mean(ape)))
 }

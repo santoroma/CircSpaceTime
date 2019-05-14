@@ -61,7 +61,22 @@
 #'  Journal of the American Statistical Association,109 (2014), 1565-1580
 #' @examples
 #'
+# This is the first part of the ProjKrigSp example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#'
+#' \donttest{
 #' library(CircSpaceTime)
+#' #### simulated example
+#' ## auxiliary functions
+#' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
+#'   d <- if (is.matrix(varcov))
+#'   ncol(varcov)
+#'   else 1
+#'   z <- matrix(rnorm(n * d), n, d) %*% chol(varcov)
+#'   y <- t(mean + t(z))
+#'   return(y)
+#' }
 #'  ####
 #'  # Simulation using exponential  spatial covariance function
 #'  ####
@@ -90,7 +105,7 @@
 #'
 #' ################ some useful quantities
 #' rho.min <- 3/max(Dist)
-#' rho.max <- rho_sp.min+0.5
+#' rho.max <- rho.min+0.5
 #'
 #' set.seed(100)
 #' a <- Sys.time()
@@ -108,7 +123,8 @@
 #'                 "alpha_mu" = c(0, 0),
 #'                 "alpha_sigma" = diag(10,2)
 #'  )  ,
-#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1,
+#'                   "sdr" = sample(.05,length(theta), replace = TRUE)),
 #'  iter    = 100000,
 #'  BurninThin    = c(burnin = 50000, thin = 10),
 #'  accept_ratio = 0.234,
@@ -116,12 +132,12 @@
 #'  corr_fun = "exponential",
 #'   kappa_matern = .5,
 #'  n_chains = 2 ,
+#'  n_chains = 2 ,
 #'  parallel = TRUE ,
 #'  n_cores = 2
 #')
 #' # If you don't want to install/use DoParallel
 #' # please set parallel = FALSE. Keep in mind that it can be substantially slower
-#'# How much it takes?
 #' Sys.time()-a
 #' check <-  ConvCheck(mod)
 #' check$Rhat #close to 1 we have convergence
@@ -132,6 +148,7 @@
 #'
 #'  par(mfrow=c(1,1))
 #' # once convergence is achieved move to prediction using ProjKrigSp
+#' }
 #' @export
 
 
@@ -149,7 +166,7 @@ ProjSp  <- function(
                  "alpha_mu" = c(1., 1.),
                  "alpha_sigma" = c()
   ) ,
-  sd_prop   = list( "sigma2" = 0.5, "tau" = 0.5, "rho" = 0.5, "sdr" = sample(.05,length(x), replace = T)),
+  sd_prop   = list( "sigma2" = 0.5, "tau" = 0.5, "rho" = 0.5, "sdr" = sample(.05,length(x), replace = TRUE)),
   iter    = 1000,
   BurninThin    = c(burnin = 20, thin = 10),
   accept_ratio = 0.234,

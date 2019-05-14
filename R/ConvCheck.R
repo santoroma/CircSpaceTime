@@ -23,6 +23,10 @@
 #'  spatio-temporal estimations
 #' @examples
 #'
+# This is the first part of the WrapKrigSp example that is tested.
+# We do this in order to have less than 10 minutes running examples
+# and there is no way to do faster examples
+#' \donttest{
 #' library(CircSpaceTime)
 #' ## functions
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -79,7 +83,7 @@
 #'                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
 #'                 "sigma2"    = c(0.1, 1),
 #'                 "sep_par"  = c(0.4, 0.01),
-#'                 "k"       = sample(0,length(theta), replace = T)),
+#'                 "k"       = sample(0,length(theta), replace = TRUE)),
 #'  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
 #'                  "sep_par"  = c(1,1), ### beta prior
@@ -98,7 +102,7 @@
 #' Sys.time()-a
 #' check <- ConvCheck(mod,startit =1 ,thin=1)
 #' check$Rhat ## convergence has been reached
-#'
+#' }
 #' @export
 
 ConvCheck <- function(mod, startit = 15000, thin = 10) {

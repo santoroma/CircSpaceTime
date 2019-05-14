@@ -31,6 +31,16 @@
 #' @examples
 #'
 #' library(CircSpaceTime)
+#' ## auxiliary function
+#' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
+#'   d <- if (is.matrix(varcov))
+#'     ncol(varcov)
+#'   else 1
+#'   z <- matrix(rnorm(n * d), n, d) %*% chol(varcov)
+#'   y <- t(mean + t(z))
+#'   return(y)
+#' }
+#'
 #'  ####
 #'  # Simulation using exponential  spatial covariance function
 #'  ####
@@ -59,7 +69,7 @@
 #'
 #' ################ some useful quantities
 #' rho.min <- 3/max(Dist)
-#' rho.max <- rho_sp.min+0.5
+#' rho.max <- rho.min+0.5
 #'
 #' set.seed(100)
 #' a <- Sys.time()
@@ -77,7 +87,8 @@
 #'                 "alpha_mu" = c(0, 0),
 #'                 "alpha_sigma" = diag(10,2)
 #'  )  ,
-#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1, "sdr" = sample(.05,length(theta), replace = T)),
+#'  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1,
+#'                   "sdr" = sample(.05,length(theta), replace = TRUE)),
 #'  iter    = 100000,
 #'  BurninThin    = c(burnin = 50000, thin = 10),
 #'  accept_ratio = 0.234,
@@ -102,8 +113,8 @@
 #'  par(mfrow=c(1,1))
 #'
 #' # move to prediction once convergence is achieved
-#' Krig <- WrapKrigSp(
-#'     WrapSp_out = mod_exp,
+#' Krig <- ProjKrigSp(
+#'     ProjSp_out = mod,
 #'     coords_obs =  coords[-val,],
 #'     coords_nobs =  coords[val,],
 #'     x_obs = theta[-val]

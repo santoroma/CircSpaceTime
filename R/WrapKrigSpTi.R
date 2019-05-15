@@ -161,8 +161,10 @@
 #' )
 #' ### checking the prediction
 #' Wrap_Ape <- APEcirc(theta[val], Krig$Prev_out)
-#' Wrap_Crps <- CRPScirc(theta[val], Krig$Prev_out)
+#' \donttest{
 #'
+#'  Wrap_Crps <- CRPScirc(theta[val], Krig$Prev_out)
+#' }
 #' @export
 WrapKrigSpTi <- function(
   WrapSpTi_out,

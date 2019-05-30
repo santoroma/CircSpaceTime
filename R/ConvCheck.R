@@ -23,9 +23,6 @@
 #'  spatio-temporal estimations
 #' @examples
 #'
-# This is the first part of the WrapKrigSp example that is tested.
-# We do this in order to have less than 10 minutes running examples
-# and there is no way to do faster examples
 #' \donttest{
 #' library(CircSpaceTime)
 #' ## functions
@@ -73,7 +70,6 @@
 #' rho_t.max  <- rho_t.min+0.5
 #' val <- sample(1:n,round(n*0.2)) #validation set
 #' set.seed(100)
-#' a <- Sys.time()
 #' mod <- WrapSpTi(
 #'  x       = theta[-val],
 #'  coords    = coords[-val,],
@@ -99,7 +95,6 @@
 #'  parallel = FALSE,
 #'  n_cores = 1
 #' )
-#' Sys.time()-a
 #' check <- ConvCheck(mod,startit =1 ,thin=1)
 #' check$Rhat ## convergence has been reached
 #' }

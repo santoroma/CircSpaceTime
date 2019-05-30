@@ -59,9 +59,6 @@
 #' The Annals of Applied Statistics 6 (2013), 1478-1498
 #' @examples
 #'
-# This is the first part of the WrapKrigSp example that is tested.
-# We do this in order to have less than 10 minutes running examples
-# and there is no way to do faster examples
 #' \donttest{
 #' library(CircSpaceTime)
 #' ## auxiliary function

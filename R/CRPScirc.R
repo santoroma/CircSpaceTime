@@ -23,9 +23,6 @@
 #' and its Application to Mesoscale Forecast Ensemble Verification",  Q.J.R. Meteorol. Soc. 132 (2005), 2925-2942.
 #' @examples
 #'
-# This is the first part of the ProjKrigSp example that is tested.
-# We do this in order to have less than 10 minutes running examples
-# and there is no way to do faster examples
 #' \donttest{
 #' library(CircSpaceTime)
 #' ## auxiliary function

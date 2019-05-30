@@ -80,9 +80,11 @@ back to the original scale
 }
 
 \examples{
-\dontrun{
+
+\donttest{
+library(CircSpaceTime)
 ## functions
-rmnorm=function(n = 1, mean = rep(0, d), varcov){
+rmnorm <- function(n = 1, mean = rep(0, d), varcov){
  d <- if (is.matrix(varcov))
    ncol(varcov)
   else 1
@@ -95,8 +97,8 @@ rmnorm=function(n = 1, mean = rep(0, d), varcov){
 ## Simulation                       ##
 ######################################
 set.seed(1)
-n <- 100
-### simulate coordinates from a uniform distribution
+n <- 20
+### simulate coordinates from a unifrom distribution
 coords  <- cbind(runif(n,0,100), runif(n,0,100)) #spatial coordinates
 coordsT <- sort(runif(n,0,100)) #time coordinates (ordered)
 Dist <- as.matrix(dist(coords))
@@ -108,106 +110,93 @@ sep_par <- 0.5 #separability parameter
 sigma2  <- 0.3 # variance of the process
 alpha   <- c(0.5)
 #Gneiting covariance
-SIGMA   <- sigma2*(rhoT*DistT^2+1)^(-1)*
-             exp(-rho*Dist/(rhoT*DistT^2+1)^(sep_par/2))
+SIGMA <- sigma2 * (rhoT * DistT^2 + 1)^(-1) * exp(-rho * Dist/(rhoT * DistT^2 + 1)^(sep_par/2))
 
-#generate the linear variable
-Y <- rmnorm(1,rep(alpha,times=n), SIGMA)
+Y <- rmnorm(1,rep(alpha, times = n), SIGMA) #generate the linear variable
 theta <- c()
 ## wrapping step
 for(i in 1:n) {
-  theta[i] <- Y[i]\%\%(2*pi)
+ theta[i] <- Y[i] \%\% (2*pi)
 }
-### This is the result of the simulation
+### Add plots of the simulated data
 
 rose_diag(theta)
-par(mfrow=c(1,1))
-
-### use this values as references for the definition of initial values and priors
+## use this values as references for the definition of initial values and priors
 rho_sp.min <- 3/max(Dist)
 rho_sp.max <- rho_sp.min+0.5
 rho_t.min  <- 3/max(DistT)
 rho_t.max  <- rho_t.min+0.5
 val <- sample(1:n,round(n*0.2)) #validation set
-
 set.seed(100)
-
 mod <- WrapSpTi(
-  x       = theta[-val],
-  coords    = coords[-val,],
-  times    = coordsT[-val],
-  start   = list("alpha"      = c(1, 0.1),
-                 "rho_sp"     = c(runif(1,0.01,rho_sp.max),runif(1,0.001,rho_sp.max)),
-                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
-                 "sigma2"    = c(0.1, 1),
-                 "sep_par"  = c(0.4, 0.01),
-                 "k"       = sample(0,length(theta), replace = T)),
-  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
-                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
-                  "sep_par"  = c(1,1), ### beta prior
-                  "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
-                  "alpha" =  c(0,20) ## wrapped gaussian with large variance
-  ),
-  sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
-  iter    = 150000,
-  BurninThin    = c(burnin = 50000, thin = 10),
-  accept_ratio = 0.234,
-  adapt_param = c(start = 1, end = 1000, exp = 0.5),
-  n_chains = 2 ,
-  # It is better to install doParallel and set parallel = TRUE and n_cores >=2
-  # With parallel = FALSE it takes a lot of time
-  parallel = FALSE
+ x       = theta[-val],
+ coords    = coords[-val,],
+ times    = coordsT[-val],
+ start   = list("alpha"      = c(1, 0.1),
+                "rho_sp"     = c(runif(1,0.01,rho_sp.max),runif(1,0.001,rho_sp.max)),
+                "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
+                "sigma2"    = c(0.1, 1),
+                "sep_par"  = c(0.4, 0.01),
+                "k"       = sample(0,length(theta), replace = TRUE)),
+ priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
+                 "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
+                 "sep_par"  = c(1,1), ### beta prior
+                 "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
+                 "alpha" =  c(0,20) ## wrapped gaussian with large variance
+ )  ,
+ sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
+ iter    = 150000,
+ BurninThin    = c(burnin = 50000, thin = 10),
+ accept_ratio = 0.234,
+ adapt_param = c(start = 1, end = 1000, exp = 0.5),
+ n_chains = 2 ,
+ parallel = FALSE,
+ n_cores = 1
 )
-
-### with multiple chains we can use ConvCheck
 check <- ConvCheck(mod,startit =1 ,thin=1)
 check$Rhat ## convergence has been reached
-### when plotting chains remember that alpha is a circular variable
-
+## when plotting chains remember that alpha is a circular variable
 par(mfrow=c(3,2))
 coda::traceplot(check$mcmc)
 
-### point and interval estimates can be extracted from the chains
-# for example
-alpha.sim <- c(mod[[1]]$alpha,mod[[2]]$alpha)
+## point and interval estimates can be extracted from the chains
 
 ## if we need an update:
 start.up <- list("alpha"      = c(mod[[1]]$alpha[10000], mod[[2]]$alpha[10000]),
-               "rho_sp"     = c(mod[[1]]$rho_sp[10000],mod[[2]]$rho_sp[10000]),
-               "rho_t"     = c(mod[[1]]$rho_t[10000], mod[[2]]$rho_t[10000]),
-               "sigma2"    = c(mod[[1]]$sigma2[10000], mod[[2]]$sigma2[10000]),
-               "sep_par"  = c(mod[[1]]$sep_par[10000], mod[[2]]$sep_par[10000]),
-               "k"       = sample(0,length(theta), replace = T))
+              "rho_sp"     = c(mod[[1]]$rho_sp[10000],mod[[2]]$rho_sp[10000]),
+              "rho_t"     = c(mod[[1]]$rho_t[10000], mod[[2]]$rho_t[10000]),
+              "sigma2"    = c(mod[[1]]$sigma2[10000], mod[[2]]$sigma2[10000]),
+              "sep_par"  = c(mod[[1]]$sep_par[10000], mod[[2]]$sep_par[10000]),
+              "k"       = sample(0,length(theta), replace = TRUE))
 
 
 
-mod_up <- WrapSpTi(
-  x       = theta[-val],
-  coords    = coords[-val,],
-  times    = coordsT[-val],
-  start   = start.up,
-  priors   = list("rho_sp"      = c(0.001,rho_sp.max), ### uniform prior on this interval
-                  "rho_t"      = c(0.001,rho_t.max), ### uniform prior on this interval
-                  "sep_par"  = c(1,1), ### gamma prior with mode close to zero and  variance=1
-                  "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
-                  "alpha" =  c(0,20) ## wrapped gaussian with large variance
-  ),
-  sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
-  iter    = 150000,
-  BurninThin    = c(burnin = 50000, thin = 10),
-  accept_ratio = 0.234,
-  adapt_param = c(start = 200000, end = 20000, exp = 0.5), #to avoid the adaptation step
-                                                           #set start > iter
-  n_chains = 2 ,
-  # It is better to install doParallel and set parallel = TRUE and n_cores >=2
-  # With parallel = FALSE it takes a lot of time
-  parallel = FALSE
+mod <- WrapSpTi(
+ x       = theta[-val],
+ coords    = coords[-val,],
+ times    = coordsT[-val],
+ start   = start.up,
+  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
+                 "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
+                 "sep_par"  = c(1,1), ### beta prior
+                 "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
+                 "alpha" =  c(0,20) ## wrapped gaussian with large variance
+ )  ,
+ sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
+ iter    = 150000,
+ BurninThin    = c(burnin = 50000, thin = 10),
+ accept_ratio = 0.234,
+ adapt_param = c(start = 1, end = 1000, exp = 0.5),
+ n_chains = 2 ,
+ parallel = FALSE,
+ n_cores = 1
 )
-check <- ConvCheck(mod_up,startit = 1,thin=1)
+check <- ConvCheck(mod,startit = 1,thin=1)
 check$Rhat
 par(mfrow=c(3,2))
 coda::traceplot(check$mcmc)
 }
+#### move to the prediction step with WrapKrigSpTi
 }
 \references{
 G. Mastrantonio, G. Jona Lasinio,

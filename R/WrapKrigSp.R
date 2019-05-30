@@ -36,7 +36,7 @@
 #' "Spatial analysis of wave direction data using wrapped Gaussian processes",
 #'  The Annals of Applied Statistics, 6 (2012), 1478-1498
 #' @examples
-#'
+#' \dontrun{
 #' library(CircSpaceTime)
 #' ## auxiliary function
 #' rmnorm<-function(n = 1, mean = rep(0, d), varcov){
@@ -111,7 +111,12 @@
 #'
 #'#### check the quality of the prediction using APE and CRPS
 #' ApeCheck <- APEcirc(theta[val],Krig$Prev_out)
-#' CrpsCheck <- CRPScirc(theta[val],Krig$Prev_out)
+#'
+#'
+#' # The CRPScirc will take from 30 sec. to 2 min. on this model depending on your OS and machine.
+#'  CrpsCheck <- CRPScirc(theta[val],Krig$Prev_out)
+#' }
+#'
 #'
 #' @export
 WrapKrigSp <- function(

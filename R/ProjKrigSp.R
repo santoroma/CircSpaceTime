@@ -29,7 +29,7 @@
 #' "Spatio-temporal circular models with non-separable covariance structure",
 #' TEST 25 (2016), 331-350 https://doi.org/10.1007/s11749-015-0458-y
 #' @examples
-#'
+#' \donttest{
 #' library(CircSpaceTime)
 #' ## auxiliary function
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -96,7 +96,7 @@
 #'  corr_fun = "exponential",
 #'   kappa_matern = .5,
 #'  n_chains = 2 ,
-#'  parallel = TRUE ,
+#'  parallel = FALSE ,
 #'  n_cores = 2
 #')
 #' # If you don't want to install/use DoParallel
@@ -123,7 +123,7 @@
 #' # The quality of prediction can be checked using APEcirc and CRPScirc
 #' ape  <- APEcirc(theta[val],Krig$Prev_out)
 #' crps <- CRPScirc(theta[val],Krig$Prev_out)
-#'
+#' }
 #' @export
 #'
 ProjKrigSp <- function(

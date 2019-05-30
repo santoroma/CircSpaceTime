@@ -82,7 +82,9 @@ back to the original scale
 }
 
 \examples{
-\dontrun{
+
+\donttest{
+library(CircSpaceTime)
 ## auxiliary function
 rmnorm<-function(n = 1, mean = rep(0, d), varcov){
   d <- if (is.matrix(varcov))
@@ -97,7 +99,7 @@ rmnorm<-function(n = 1, mean = rep(0, d), varcov){
 # Simulation with exponential spatial covariance function
 ####
 set.seed(1)
-n <- 100
+n <- 20
 coords <- cbind(runif(n,0,100), runif(n,0,100))
 Dist <- as.matrix(dist(coords))
 
@@ -109,48 +111,45 @@ SIGMA   <- sigma2*exp(-rho*Dist)
 Y <- rmnorm(1,rep(alpha,times=n), SIGMA)
 theta <- c()
 for(i in 1:n) {
-  theta[i] <- Y[i]\%\%(2*pi)
+ theta[i] <- Y[i]\%\%(2*pi)
 }
-
+rose_diag(theta)
 
 #validation set
 val <- sample(1:n,round(n*0.1))
 
-set.seed(100)
+set.seed(12345)
 mod <- WrapSp(
-  x       = theta[-val],
-  coords    = coords[-val,],
- start   = list("alpha"      = c(1),
-                "rho"     = c(0.1),
-                 "sigma2"    = c(0.1),
-                 "k"       = rep(0,times = theta)),
-  priors   = list("rho"      = c(0.03,3),
-                  "sigma2"    = c(5,5),
-                  "alpha" =  c(0,20)
-  ),
-  sd_prop   = list( "sigma2" = 0.1,  "rho" = 0.1),
-  iter    = 36000,
-  BurninThin    = c(burnin = 20000, thin = 8),
-  accept_ratio = 0.234,
-  adapt_param = c(start = 1, end = 1000, exp = 0.5),
-  corr_fun = "exponential",
-  kappa_matern = .5
-  )
-
-
-## check convergence graphically with multiple chains the function ConvCheck can be used
+ x       = theta[-val],
+ coords    = coords[-val,],
+	start   = list("alpha"      = c(.1,0.2),
+			 "rho"     = c(0.06,0.07),#c(0.06,0.03),
+                "sigma2"    = c(0.1,0.5),#c(0.1,0.5),
+                "k"       = rep(0,(n-length(val)))),
+priors   = list("rho"      = c(0.04,0.08), #few observations require to be more informative
+                  "sigma2"    = c(2,1),
+                  "alpha" =  c(0,10)
+ ),
+sd_prop   = list( "sigma2" = 0.1,  "rho" = 0.1),
+ iter    = 100000,
+ BurninThin    = c(burnin = 50000, thin = 5),
+ accept_ratio = 0.234,
+ adapt_param = c(start = 40000, end = 45000, exp = 0.5),
+corr_fun = "exponential",
+  kappa_matern = .5,
+ parallel=FALSE, #With doParallel and n_cores=2 it is a lot faster
+ n_chains=2 ,
+ n_cores=1
+)
+check<-ConvCheck(mod)
+check$Rhat ## close to 1 means convergence has been reached
+## graphical check
 par(mfrow=c(3,1))
-plot(mod[[1]]$alpha[],type="l")
-abline(h=alpha[1],col=2)
-
-plot(mod[[1]]$sigma2[],type="l")
-abline(h=sigma2[1],col=2)
-
-plot(mod[[1]]$rho[],type="l")
-abline(h=rho[1],col=2)
+coda::traceplot(check$mcmc)
 
 ##### We move to the spatial interpolation see WrapKrigSp
 }
+
 }
 \references{
 G. Jona Lasinio, A. Gelfand, M. Jona-Lasinio,

@@ -60,9 +60,6 @@
 #' Data", JASA 97 (2002), 590-600
 #' @examples
 #'
-# This is the first part of the WrapKrigSpTi example that is tested.
-# We do this in order to have less than 10 minutes running examples
-# and there is no way to do faster examples
 #' \donttest{
 #' library(CircSpaceTime)
 #' ## functions

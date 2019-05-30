@@ -36,6 +36,7 @@
 #' Data", JASA 97 (2002), 590-600
 #' @examples
 #'
+#' \dontrun{
 #' library(CircSpaceTime)
 #' #### simulated example
 #' ## auxiliary functions
@@ -83,7 +84,7 @@
 #' val <- sample(1:n,round(n*0.2))
 #'
 #' set.seed(200)
-#' a <- Sys.time()
+#'
 #' mod <- ProjSpTi(
 #'  x       = theta[-val],
 #'  coords    = coords[-val,],
@@ -115,7 +116,6 @@
 #'  parallel = FALSE,#slower but still feasible without parallelization
 #'  n_cores = 1
 #')
-#' Sys.time()- a
 #' check <- ConvCheck(mod)
 #' check$Rhat ### convergence has been reached when the values are close to 1
 #' #### graphical checking
@@ -135,7 +135,11 @@
 #'
 #' #### checking the prediction
 #' Proj_ape <- APEcirc(theta[val], Krig$Prev_out)
-#' Proj_crps <- CRPScirc(theta[val],Krig$Prev_out)
+#'
+#' # The CRPScirc will take from 30 sec. to 2 min. on this model depending on your OS and machine.
+#'    Proj_crps <- CRPScirc(theta[val],Krig$Prev_out)
+#' }
+#'
 #'
 #' @export
 ProjKrigSpTi <- function(

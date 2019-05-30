@@ -33,13 +33,14 @@ The plot in ggplot2 format.
 Rose diagram in ggplot2 inspired from rose.diag in package circular.
 }
 \examples{
-\dontrun{
-require(circular)
-x<-rwrappedstable(200, index=1.5, skewness=.5)
-x1<-rwrappedstable(200, index=2, skewness=.5)
-x2<-rwrappedstable(200, index=0.5, skewness=1)
-rose_diag(x,bins=15,color="green")
-rose_diag(x1,bins=15,color="blue",alpha=.5,add=T)
-rose_diag(x2,bins=15,color="red",alpha=.5,add=T)
-}
+
+
+library(CircSpaceTime)
+x <- circular::rwrappedstable(200, index = 1.5, skewness = .5)
+x1 <- circular::rwrappedstable(200, index = 2, skewness = .5)
+x2 <- circular::rwrappedstable(200, index = 0.5, skewness = 1)
+rose_diag(x, bins = 15, color = "green")
+rose_diag(x1, bins = 15, color = "blue", alpha = .5, add = TRUE)
+rose_diag(x2, bins = 15, color = "red", alpha = .5, add = TRUE)
+
 }

@@ -61,9 +61,6 @@
 #'  Journal of the American Statistical Association,109 (2014), 1565-1580
 #' @examples
 #'
-# This is the first part of the ProjKrigSp example that is tested.
-# We do this in order to have less than 10 minutes running examples
-# and there is no way to do faster examples
 #'
 #' \donttest{
 #' library(CircSpaceTime)

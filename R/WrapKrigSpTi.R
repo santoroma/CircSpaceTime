@@ -33,6 +33,7 @@
 #' @references T. Gneiting,  "Nonseparable, Stationary Covariance Functions for Space-Time
 #' Data", JASA 97 (2002), 590-600
 #' @examples
+#'  \dontrun{
 #' library(CircSpaceTime)
 #' ## functions
 #' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
@@ -112,7 +113,7 @@
 #' par(mfrow=c(3,2))
 #' coda::traceplot(check$mcmc)
 #'
-#' \donttest{
+#'
 #' ## point and interval estimates can be extracted from the chains
 #'
 #' ## if we need an update:
@@ -149,7 +150,7 @@
 #' check$Rhat
 #' par(mfrow=c(3,2))
 #' coda::traceplot(check$mcmc)
-#' }
+#'
 #' ############## Prediction on the validation set
 #' Krig <- WrapKrigSpTi(
 #'   WrapSpTi_out = mod,
@@ -161,8 +162,8 @@
 #' )
 #' ### checking the prediction
 #' Wrap_Ape <- APEcirc(theta[val], Krig$Prev_out)
-#' \donttest{
 #'
+#' # The CRPScirc will take from 30 sec. to 2 min. on this model depending on your OS and machine.
 #'  Wrap_Crps <- CRPScirc(theta[val], Krig$Prev_out)
 #' }
 #' @export

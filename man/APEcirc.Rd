@@ -30,17 +30,16 @@ defined as the average circular distance across pairs
 }
 \examples{
 
-\donttest{
 library(CircSpaceTime)
 ## functions
 rmnorm <- function(n = 1, mean = rep(0, d), varcov){
- d <- if (is.matrix(varcov))
-   ncol(varcov)
+  d <- if (is.matrix(varcov))
+    ncol(varcov)
   else 1
   z <- matrix(rnorm(n * d), n, d) \%*\% chol(varcov)
   y <- t(mean + t(z))
   return(y)
-  }
+}
 
 ######################################
 ## Simulation                       ##
@@ -65,7 +64,7 @@ Y <- rmnorm(1,rep(alpha, times = n), SIGMA) #generate the linear variable
 theta <- c()
 ## wrapping step
 for(i in 1:n) {
- theta[i] <- Y[i] \%\% (2*pi)
+  theta[i] <- Y[i] \%\% (2*pi)
 }
 ### Add plots of the simulated data
 
@@ -77,39 +76,40 @@ rho_t.min  <- 3/max(DistT)
 rho_t.max  <- rho_t.min+0.5
 val <- sample(1:n,round(n*0.2)) #validation set
 set.seed(100)
-a <- Sys.time()
 mod <- WrapSpTi(
- x       = theta[-val],
- coords    = coords[-val,],
- times    = coordsT[-val],
- start   = list("alpha"      = c(1, 0.1),
-                "rho_sp"     = c(runif(1,0.01,rho_sp.max),runif(1,0.001,rho_sp.max)),
-                "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
-                "sigma2"    = c(0.1, 1),
-                "sep_par"  = c(0.4, 0.01),
-                "k"       = sample(0,length(theta), replace = TRUE)),
- priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
-                 "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
-                 "sep_par"  = c(1,1), ### beta prior
-                 "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
-                 "alpha" =  c(0,20) ## wrapped gaussian with large variance
- )  ,
- sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
- iter    = 150000,
- BurninThin    = c(burnin = 50000, thin = 10),
- accept_ratio = 0.234,
- adapt_param = c(start = 1, end = 1000, exp = 0.5),
- n_chains = 2 ,
- parallel = FALSE,
- n_cores = 1
+  x       = theta[-val],
+  coords    = coords[-val,],
+  times    = coordsT[-val],
+  start   = list("alpha"      = c(.79, .74),
+                 "rho_sp"     = c(.33,.52),
+                 "rho_t"     = c(.19, .43),
+                 "sigma2"    = c(.49, .37),
+                 "sep_par"  = c(.47, .56),
+                 "k"       = sample(0,length(theta[-val]), replace = TRUE)),
+  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
+                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
+                  "sep_par"  = c(1,1), ### beta prior
+                  "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
+                  "alpha" =  c(0,20) ## wrapped gaussian with large variance
+  )  ,
+  sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"= 0.1),
+  iter    = 7000,
+  BurninThin    = c(burnin = 3000, thin = 10),
+  accept_ratio = 0.234,
+  adapt_param = c(start = 1, end = 1000, exp = 0.5),
+  n_chains = 2 ,
+  parallel = FALSE,
+  n_cores = 1
 )
-Sys.time()-a
-check <- ConvCheck(mod,startit =1 ,thin=1)
+check <- ConvCheck(mod,startit = 1 ,thin = 1)
 check$Rhat ## convergence has been reached
 ## when plotting chains remember that alpha is a circular variable
-par(mfrow=c(3,2))
+par(mfrow = c(3,2))
 coda::traceplot(check$mcmc)
-#' ############## Prediction on the validation set
+par(mfrow = c(1,1))
+
+
+############## Prediction on the validation set
 Krig <- WrapKrigSpTi(
   WrapSpTi_out = mod,
   coords_obs =  coords[-val,],
@@ -120,8 +120,6 @@ Krig <- WrapKrigSpTi(
 )
 ### checking the prediction
 Wrap_Ape <- APEcirc(theta[val], Krig$Prev_out)
-Wrap_Crps <- CRPScirc(theta[val], Krig$Prev_out)
-}
 }
 \references{
 G. Jona Lasinio, A. Gelfand, M. Jona-Lasinio,

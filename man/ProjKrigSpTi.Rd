@@ -2,7 +2,7 @@
 % Please edit documentation in R/ProjKrigSpTi.R
 \name{ProjKrigSpTi}
 \alias{ProjKrigSpTi}
-\title{Spatio temporal interpolation using projected spatial temporal normal model.}
+\title{#' Spatio temporal interpolation using projected spatial temporal normal model.}
 \usage{
 ProjKrigSpTi(ProjSpTi_out, coords_obs, coords_nobs, times_obs, times_nobs,
   x_obs)
@@ -25,7 +25,7 @@ the data in the right interval}
 \value{
 a list of 3 elements
 \describe{
-\item{\code{M_out}}{the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by ProjSpTi}
+	\item{\code{M_out}}{the mean of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by ProjSpTi}
 \item{\code{V_out}}{the variance of the associated linear process on the prediction locations  coords_nobs (rows) over all the posterior samples (columns) returned by ProjSpTi}
 \item{\code{Prev_out}}{are the posterior predicted  values at the unobserved locations.}
 }
@@ -36,15 +36,15 @@ prediction for circular space-time data using samples
 from the posterior distribution of the space-time projected normal model.
 }
 \examples{
-
-\dontrun{
 library(CircSpaceTime)
 #### simulated example
 ## auxiliary functions
-rmnorm <- function(n = 1, mean = rep(0, d), varcov){
-  d <- if (is.matrix(varcov))
-  ncol(varcov)
-  else 1
+rmnorm <- function(n = 1, mean = rep(0, d), varcov) {
+  d <- if (is.matrix(varcov)) {
+    ncol(varcov)
+  } else {
+    1
+  }
   z <- matrix(rnorm(n * d), n, d) \%*\% chol(varcov)
   y <- t(mean + t(z))
   return(y)
@@ -55,93 +55,97 @@ rmnorm <- function(n = 1, mean = rep(0, d), varcov){
 set.seed(1)
 n <- 20
 
-coords  <- cbind(runif(n,0,100), runif(n,0,100))
-coordsT <- cbind(runif(n,0,100))
+coords <- cbind(runif(n, 0, 100), runif(n, 0, 100))
+coordsT <- cbind(runif(n, 0, 100))
 Dist <- as.matrix(dist(coords))
 DistT <- as.matrix(dist(coordsT))
 
-rho     <- 0.05
-rhoT    <- 0.01
+rho <- 0.05
+rhoT <- 0.01
 sep_par <- 0.1
-sigma2  <- 1
-alpha   <- c(0.5)
-SIGMA   <- sigma2*(rhoT*DistT^2+1)^(-1)*exp(-rho*Dist/(rhoT*DistT^2+1)^(sep_par/2))
-tau     <- 0.2
+sigma2 <- 1
+alpha <- c(0.5)
+SIGMA <- sigma2 * (rhoT * DistT^2 + 1)^(-1) * exp(-rho * Dist / (rhoT * DistT^2 + 1)^(sep_par / 2))
+tau <- 0.2
 
-Y <- rmnorm(1,rep(alpha,times=n),
-            kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+Y <- rmnorm(
+  1, rep(alpha, times = n),
+  kronecker(SIGMA, matrix(c(sigma2, sqrt(sigma2) * tau, sqrt(sigma2) * tau, 1), nrow = 2))
+)
 theta <- c()
-for(i in 1:n) {
- theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
+for (i in 1:n) {
+  theta[i] <- atan2(Y[(i - 1) * 2 + 2], Y[(i - 1) * 2 + 1])
 }
-theta <- theta \%\% (2*pi) ## to be sure we have values in (0,2pi)
+theta <- theta \%\% (2 * pi) ## to be sure we have values in (0,2pi)
 rose_diag(theta)
 ################ some useful quantities
-rho_sp.min <- 3/max(Dist)
-rho_sp.max <- rho_sp.min+0.5
-rho_t.min <- 3/max(DistT)
-rho_t.max <- rho_t.min+0.5
+rho_sp.min <- 3 / max(Dist)
+rho_sp.max <- rho_sp.min + 0.5
+rho_t.min <- 3 / max(DistT)
+rho_t.max <- rho_t.min + 0.5
 ### validation set 20\% of the data
-val <- sample(1:n,round(n*0.2))
+val <- sample(1:n, round(n * 0.2))
 
 set.seed(200)
 
 mod <- ProjSpTi(
- x       = theta[-val],
- coords    = coords[-val,],
- times    = coordsT[-val],
- start   = list("alpha"      = c(1,1,pi/4,pi/4),
-                "rho_sp"     = c(0.1, 0.3),
-                "rho_t"     = c(0.1, 0.2),
-                "sep_par"  = c(0.4, 0.01),
-                "tau"     = c(0.1, 0.5),
-               "sigma2"    = c(0.1, 1),
-               "r"       = abs(rnorm(  length(theta))  )),
- priors   = list("rho_sp"      = c(rho_sp.min,rho_sp.max), #Uniform prior in this interval
-                 "rho_t"      = c(rho_t.min,rho_t.max),#Uniform prior in this interval
-                 "sep_par"  = c(1,1), #Beta distribution
-                 "tau"      = c(-1,1), ## Uniform prior in this interval
-                "sigma2"    = c(10,3), #inverse gamma
-                 "alpha_mu" = c(0, 0), ##a vector of 2 elements,
-                                       ##the means of the bivariate Gaussian distribution
-                 "alpha_sigma" = diag(10,2)# a 2x2 matrix, the covariance matrix of the
-                                           # bivariate Gaussian distribution,
- )  ,
- sd_prop   = list("sep_par"=0.1,"sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1,"rho_t" = 0.1,
-                  "sdr" = sample(.05,length(theta), replace = TRUE)),
- iter    = 50000,
- BurninThin    = c(burnin = 20000, thin = 2),
- accept_ratio = 0.234,
- adapt_param = c(start = 155000, end = 156000, exp = 0.5),
- n_chains = 2 ,
- parallel = FALSE,#slower but still feasible without parallelization
- n_cores = 1
+  x = theta[-val],
+  coords = coords[-val, ],
+  times = coordsT[-val],
+  start = list(
+    "alpha" = c(0.66, 0.38, 0.27, 0.13),
+    "rho_sp" = c(0.29, 0.33),
+    "rho_t" = c(0.25, 0.13),
+    "sep_par" = c(0.56, 0.31),
+    "tau" = c(0.71, 0.65),
+    "sigma2" = c(0.47, 0.53),
+    "r" = abs(rnorm(length(theta[-val])))
+  ),
+  priors = list(
+    "rho_sp" = c(rho_sp.min, rho_sp.max), # Uniform prior in this interval
+    "rho_t" = c(rho_t.min, rho_t.max), # Uniform prior in this interval
+    "sep_par" = c(1, 1), # Beta distribution
+    "tau" = c(-1, 1), ## Uniform prior in this interval
+    "sigma2" = c(10, 3), # inverse gamma
+    "alpha_mu" = c(0, 0), ## a vector of 2 elements,
+    ## the means of the bivariate Gaussian distribution
+    "alpha_sigma" = diag(10, 2) # a 2x2 matrix, the covariance matrix of the
+    # bivariate Gaussian distribution,
+  ),
+  sd_prop = list(
+    "sep_par" = 0.1, "sigma2" = 0.1, "tau" = 0.1, "rho_sp" = 0.1, "rho_t" = 0.1,
+    "sdr" = sample(.05, length(theta), replace = TRUE)
+  ),
+  iter = 4000,
+  BurninThin = c(burnin = 2000, thin = 2),
+  accept_ratio = 0.234,
+  adapt_param = c(start = 155000, end = 156000, exp = 0.5),
+  n_chains = 2,
+  parallel = TRUE,
 )
 check <- ConvCheck(mod)
 check$Rhat ### convergence has been reached when the values are close to 1
 #### graphical checking
 #### recall that it is made of as many lists as the number of chains and it has elements named
 #### as the model's parameters
-par(mfrow = c(3,3))
+par(mfrow = c(3, 3))
 coda::traceplot(check$mcmc)
+par(mfrow = c(1, 1))
 # once convergence is reached we run the interpolation on the validation set
 Krig <- ProjKrigSpTi(
-           ProjSpTi_out = mod,
-           coords_obs =  coords[-val,],
-           coords_nobs =  coords[val,],
-           times_obs =  coordsT[-val],
-           times_nobs =  coordsT[val],
-           x_obs = theta[-val]
-       )
+  ProjSpTi_out = mod,
+  coords_obs = coords[-val, ],
+  coords_nobs = coords[val, ],
+  times_obs = coordsT[-val],
+  times_nobs = coordsT[val],
+  x_obs = theta[-val]
+)
 
 #### checking the prediction
+\donttest{
 Proj_ape <- APEcirc(theta[val], Krig$Prev_out)
-
-# The CRPScirc will take from 30 sec. to 2 min. on this model depending on your OS and machine.
-   Proj_crps <- CRPScirc(theta[val],Krig$Prev_out)
+Proj_crps <- CRPScirc(theta[val],Krig$Prev_out)
 }
-
-
 }
 \references{
 G. Mastrantonio, G.Jona Lasinio,

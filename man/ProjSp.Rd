@@ -12,7 +12,7 @@ ProjSp(x = x, coords = coords, start = list(alpha = c(1, 1, 0.5,
   length(x), replace = TRUE)), iter = 1000, BurninThin = c(burnin = 20,
   thin = 10), accept_ratio = 0.234, adapt_param = c(start = 1, end =
   1e+07, exp = 0.9, sdr_update_iter = 50), corr_fun = "exponential",
-  kappa_matern = 0.5, n_chains = 1, parallel = FALSE, n_cores = 1)
+  kappa_matern = 0.5, n_chains = 2, parallel = FALSE, n_cores = 1)
 }
 \arguments{
 \item{x}{a vector of n circular data in \eqn{[0,2\pi)}.
@@ -79,22 +79,20 @@ it returns a list of \code{n_chains} lists each with elements
 }
 \examples{
 
-
-\donttest{
 library(CircSpaceTime)
-#### simulated example
-## auxiliary functions
+## auxiliary function
 rmnorm <- function(n = 1, mean = rep(0, d), varcov){
-  d <- if (is.matrix(varcov))
-  ncol(varcov)
-  else 1
-  z <- matrix(rnorm(n * d), n, d) \%*\% chol(varcov)
-  y <- t(mean + t(z))
-  return(y)
+ d <- if (is.matrix(varcov))
+   ncol(varcov)
+ else 1
+ z <- matrix(rnorm(n * d), n, d) \%*\% chol(varcov)
+ y <- t(mean + t(z))
+ return(y)
 }
- ####
- # Simulation using exponential  spatial covariance function
- ####
+
+####
+# Simulation using exponential  spatial covariance function
+####
 set.seed(1)
 n <- 20
 coords <- cbind(runif(n,0,100), runif(n,0,100))
@@ -107,53 +105,54 @@ alpha   <- c(0.5,0.5)
 SIGMA   <- sigma2*exp(-rho*Dist)
 
 Y <- rmnorm(1,rep(alpha,times=n),
-kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
+           kronecker(SIGMA, matrix(c( sigma2,sqrt(sigma2)*tau,sqrt(sigma2)*tau,1 ) ,nrow=2 )))
 theta <- c()
 for(i in 1:n) {
-  theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
+ theta[i] <- atan2(Y[(i-1)*2+2],Y[(i-1)*2+1])
 }
 theta <- theta \%\% (2*pi) #to be sure to have values in (0,2pi)
+
 hist(theta)
 rose_diag(theta)
 
 val <- sample(1:n,round(n*0.1))
 
-################ some useful quantities
+################some useful quantities
 rho.min <- 3/max(Dist)
 rho.max <- rho.min+0.5
 
 set.seed(100)
-a <- Sys.time()
+
 mod <- ProjSp(
  x       = theta[-val],
  coords    = coords[-val,],
- start   = list("alpha"      = c(1,1,0.5,0.5),
-                "rho"     = c(0.1,0.3),
-                "tau"     = c(0.1, 0.5),
-                "sigma2"    = c(0.1, 1),
+ start   = list("alpha"      = c(0.92, 0.18, 0.56, -0.35),
+                "rho"     = c(0.51,0.15),
+                "tau"     = c(0.46, 0.66),
+                "sigma2"    = c(0.27, 0.3),
                 "r"       = abs(rnorm(  length(theta))  )),
  priors   = list("rho"      = c(rho.min,rho.max),
                  "tau"      = c(-1,1),
-                "sigma2"    = c(10,3),
-                "alpha_mu" = c(0, 0),
-                "alpha_sigma" = diag(10,2)
+                 "sigma2"    = c(10,3),
+                 "alpha_mu" = c(0, 0),
+                 "alpha_sigma" = diag(10,2)
  )  ,
  sd_prop   = list("sigma2" = 0.1, "tau" = 0.1, "rho" = 0.1,
                   "sdr" = sample(.05,length(theta), replace = TRUE)),
- iter    = 100000,
- BurninThin    = c(burnin = 50000, thin = 10),
+ iter    = 10000,
+ BurninThin    = c(burnin = 7000, thin = 10),
  accept_ratio = 0.234,
- adapt_param = c(start = 120000, end = 120000, exp = 0.5),#no adaptation
+ adapt_param = c(start = 130000, end = 120000, exp = 0.5),#no adaptation
  corr_fun = "exponential",
-  kappa_matern = .5,
- n_chains = 2 ,
+ kappa_matern = .5,
  n_chains = 2 ,
  parallel = TRUE ,
  n_cores = 2
 )
 # If you don't want to install/use DoParallel
 # please set parallel = FALSE. Keep in mind that it can be substantially slower
-Sys.time()-a
+# How much it takes?
+
 check <-  ConvCheck(mod)
 check$Rhat #close to 1 we have convergence
 
@@ -161,9 +160,9 @@ check$Rhat #close to 1 we have convergence
 par(mfrow=c(3,2))
 coda::traceplot(check$mcmc)
 
- par(mfrow=c(1,1))
+par(mfrow=c(1,1))
 # once convergence is achieved move to prediction using ProjKrigSp
-}
+
 }
 \references{
 G. Mastrantonio , G. Jona Lasinio,   A. E. Gelfand,

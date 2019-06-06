@@ -82,8 +82,6 @@ back to the original scale
 }
 
 \examples{
-
-\donttest{
 library(CircSpaceTime)
 ## auxiliary function
 rmnorm<-function(n = 1, mean = rep(0, d), varcov){
@@ -111,7 +109,7 @@ SIGMA   <- sigma2*exp(-rho*Dist)
 Y <- rmnorm(1,rep(alpha,times=n), SIGMA)
 theta <- c()
 for(i in 1:n) {
- theta[i] <- Y[i]\%\%(2*pi)
+  theta[i] <- Y[i]\%\%(2*pi)
 }
 rose_diag(theta)
 
@@ -120,36 +118,35 @@ val <- sample(1:n,round(n*0.1))
 
 set.seed(12345)
 mod <- WrapSp(
- x       = theta[-val],
- coords    = coords[-val,],
-	start   = list("alpha"      = c(.1,0.2),
-			 "rho"     = c(0.06,0.07),#c(0.06,0.03),
-                "sigma2"    = c(0.1,0.5),#c(0.1,0.5),
-                "k"       = rep(0,(n-length(val)))),
-priors   = list("rho"      = c(0.04,0.08), #few observations require to be more informative
+  x       = theta[-val],
+  coords    = coords[-val,],
+  start   = list("alpha"      = c(.36,0.38),
+                 "rho"     = c(0.041,0.052),
+                 "sigma2"    = c(0.24,0.32),
+                 "k"       = rep(0,(n - length(val)))),
+  priors   = list("rho"      = c(0.04,0.08), #few observations require to be more informative
                   "sigma2"    = c(2,1),
                   "alpha" =  c(0,10)
- ),
-sd_prop   = list( "sigma2" = 0.1,  "rho" = 0.1),
- iter    = 100000,
- BurninThin    = c(burnin = 50000, thin = 5),
- accept_ratio = 0.234,
- adapt_param = c(start = 40000, end = 45000, exp = 0.5),
-corr_fun = "exponential",
+  ),
+  sd_prop   = list( "sigma2" = 0.1,  "rho" = 0.1),
+  iter    = 1000,
+  BurninThin    = c(burnin = 500, thin = 5),
+  accept_ratio = 0.234,
+  adapt_param = c(start = 40000, end = 45000, exp = 0.5),
+  corr_fun = "exponential",
   kappa_matern = .5,
- parallel=FALSE, #With doParallel and n_cores=2 it is a lot faster
- n_chains=2 ,
- n_cores=1
+  parallel = FALSE,
+  #With doParallel, bigger iter (normally around 1e6) and n_cores>=2 it is a lot faster
+  n_chains = 2 ,
+  n_cores = 1
 )
-check<-ConvCheck(mod)
+check <- ConvCheck(mod)
 check$Rhat ## close to 1 means convergence has been reached
 ## graphical check
-par(mfrow=c(3,1))
+par(mfrow = c(3,1))
 coda::traceplot(check$mcmc)
-
+par(mfrow = c(1,1))
 ##### We move to the spatial interpolation see WrapKrigSp
-}
-
 }
 \references{
 G. Jona Lasinio, A. Gelfand, M. Jona-Lasinio,

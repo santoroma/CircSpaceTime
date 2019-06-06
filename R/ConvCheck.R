@@ -23,81 +23,65 @@
 #'  spatio-temporal estimations
 #' @examples
 #'
-#' \donttest{
-#' library(CircSpaceTime)
-#' ## functions
-#' rmnorm <- function(n = 1, mean = rep(0, d), varcov){
-#'  d <- if (is.matrix(varcov))
-#'    ncol(varcov)
+##' library(CircSpaceTime)
+#' ## auxiliary function
+#' rmnorm<-function(n = 1, mean = rep(0, d), varcov){
+#'   d <- if (is.matrix(varcov))
+#'     ncol(varcov)
 #'   else 1
 #'   z <- matrix(rnorm(n * d), n, d) %*% chol(varcov)
 #'   y <- t(mean + t(z))
 #'   return(y)
-#'   }
+#' }
 #'
-#' ######################################
-#' ## Simulation                       ##
-#' ######################################
+#' ####
+#' # Simulation with exponential spatial covariance function
+#' ####
 #' set.seed(1)
 #' n <- 20
-#' ### simulate coordinates from a unifrom distribution
-#' coords  <- cbind(runif(n,0,100), runif(n,0,100)) #spatial coordinates
-#' coordsT <- sort(runif(n,0,100)) #time coordinates (ordered)
+#' coords <- cbind(runif(n,0,100), runif(n,0,100))
 #' Dist <- as.matrix(dist(coords))
-#' DistT <- as.matrix(dist(coordsT))
 #'
-#' rho     <- 0.05 #spatial decay
-#' rhoT    <- 0.01 #temporal decay
-#' sep_par <- 0.5 #separability parameter
-#' sigma2  <- 0.3 # variance of the process
+#' rho     <- 0.05
+#' sigma2  <- 0.3
 #' alpha   <- c(0.5)
-#' #Gneiting covariance
-#' SIGMA <- sigma2 * (rhoT * DistT^2 + 1)^(-1) * exp(-rho * Dist/(rhoT * DistT^2 + 1)^(sep_par/2))
+#' SIGMA   <- sigma2*exp(-rho*Dist)
 #'
-#' Y <- rmnorm(1,rep(alpha, times = n), SIGMA) #generate the linear variable
+#' Y <- rmnorm(1,rep(alpha,times=n), SIGMA)
 #' theta <- c()
-#' ## wrapping step
 #' for(i in 1:n) {
-#'  theta[i] <- Y[i] %% (2*pi)
+#'   theta[i] <- Y[i]%%(2*pi)
 #' }
-#' ### Add plots of the simulated data
-#'
 #' rose_diag(theta)
-#' ## use this values as references for the definition of initial values and priors
-#' rho_sp.min <- 3/max(Dist)
-#' rho_sp.max <- rho_sp.min+0.5
-#' rho_t.min  <- 3/max(DistT)
-#' rho_t.max  <- rho_t.min+0.5
-#' val <- sample(1:n,round(n*0.2)) #validation set
-#' set.seed(100)
-#' mod <- WrapSpTi(
-#'  x       = theta[-val],
-#'  coords    = coords[-val,],
-#'  times    = coordsT[-val],
-#'  start   = list("alpha"      = c(1, 0.1),
-#'                 "rho_sp"     = c(runif(1,0.01,rho_sp.max),runif(1,0.001,rho_sp.max)),
-#'                 "rho_t"     = c(runif(1,0.01,rho_t.max), runif(1,0.001,rho_t.max)),
-#'                 "sigma2"    = c(0.1, 1),
-#'                 "sep_par"  = c(0.4, 0.01),
-#'                 "k"       = sample(0,length(theta), replace = TRUE)),
-#'  priors   = list("rho_sp"      = c(0.01,3/4), ### uniform prior on this interval
-#'                  "rho_t"      = c(0.01,3/4), ### uniform prior on this interval
-#'                  "sep_par"  = c(1,1), ### beta prior
-#'                  "sigma2"    = c(5,5),## inverse gamma prior with mode=5/6
-#'                  "alpha" =  c(0,20) ## wrapped gaussian with large variance
-#'  )  ,
-#'  sd_prop   = list( "sigma2" = 0.1,  "rho_sp" = 0.1,  "rho_t" = 0.1,"sep_par"=0.1),
-#'  iter    = 150000,
-#'  BurninThin    = c(burnin = 50000, thin = 10),
-#'  accept_ratio = 0.234,
-#'  adapt_param = c(start = 1, end = 1000, exp = 0.5),
-#'  n_chains = 2 ,
-#'  parallel = FALSE,
-#'  n_cores = 1
+#'
+#' #validation set
+#' val <- sample(1:n,round(n*0.1))
+#'
+#' set.seed(12345)
+#' mod <- WrapSp(
+#'   x       = theta[-val],
+#'   coords    = coords[-val,],
+#'   start   = list("alpha"      = c(.36,0.38),
+#'                  "rho"     = c(0.041,0.052),
+#'                  "sigma2"    = c(0.24,0.32),
+#'                  "k"       = rep(0,(n - length(val)))),
+#'   priors   = list("rho"      = c(0.04,0.08), #few observations require to be more informative
+#'                   "sigma2"    = c(2,1),
+#'                   "alpha" =  c(0,10)
+#'   ),
+#'   sd_prop   = list( "sigma2" = 0.1,  "rho" = 0.1),
+#'   iter    = 1000,
+#'   BurninThin    = c(burnin = 500, thin = 5),
+#'   accept_ratio = 0.234,
+#'   adapt_param = c(start = 40000, end = 45000, exp = 0.5),
+#'   corr_fun = "exponential",
+#'   kappa_matern = .5,
+#'   parallel = FALSE, #With doParallel, bigger iter (normally around 1e6) and n_cores>=2 it is a lot faster
+#'   n_chains = 2 ,
+#'   n_cores = 1
 #' )
-#' check <- ConvCheck(mod,startit =1 ,thin=1)
-#' check$Rhat ## convergence has been reached
-#' }
+#' check <- ConvCheck(mod)
+#' check$Rhat ## close to 1 means convergence has been reached
 #' @export
 
 ConvCheck <- function(mod, startit = 15000, thin = 10) {

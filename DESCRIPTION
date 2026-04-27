@@ -1,7 +1,7 @@
 Package: CircSpaceTime
 Type: Package
 Title: Spatial and Spatio-Temporal Bayesian Model for Circular Data
-Version: 0.9.0
+Version: 1.0.0
 Authors@R: c(person("Giovanna", "Jona Lasinio", email = "giovanna.jonalasinio@uniroma1.it", role = c("aut"), comment = c(ORCID = "0000-0001-8912-5018")),
           person("Gianluca", "Mastrantonio", email = "gianluca.mastrantonio@polito.it", role = c("aut"), comment = c(ORCID = "0000-0002-2963-6729")), 
           person("Mario", "Santoro", email = "santoro.ma@gmail.com", role = c("aut", "cre"), comment = c(ORCID = c("0000-0001-6626-9430"))))
